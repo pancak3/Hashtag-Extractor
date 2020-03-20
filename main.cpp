@@ -2,8 +2,6 @@
 // MPI divides work here
 
 // References:
-//
-// https://stackoverflow.com/questions/3072795
 // https://stackoverflow.com/questions/14718124
 // Note that comments/code may be adapted from man pages
 

@@ -3,15 +3,16 @@
 
 // References:
 // https://en.cppreference.com/w/cpp/thread/thread/hardware_concurrency
+// http://www.cplusplus.com/reference/fstream/ifstream/ifstream/
 // http://www.cplusplus.com/reference/thread/thread/
 // https://thispointer.com/c11-how-to-create-vector-of-thread-objects/
 // https://stackoverflow.com/questions/823479
 
 #include <fcntl.h>
+#include <fstream>
 #include <iostream>
 #include <math.h>
 #include <sstream>
-#include <sys/mman.h>
 #include <thread>
 #include <vector>
 
@@ -62,7 +63,34 @@ void process_section(char* filename, long long start, long long end) {
 
 // Actually process the section [start, end]
 void process_section_thread(char* filename, long long start, long long end) {
+	// Print start offset & end offset
 	std::stringstream m;
 	m << start << " " << end << std::endl;
 	std::cerr << m.str();
+
+	// Open file and seek
+	char c;
+	std::ifstream is(filename, std::ifstream::in);
+	is.seekg(start);
+
+	// Current position
+	long long current = start;
+
+	// Skip first 'line'
+	while (is.good()) {
+		c = is.get();
+		if (c == '\r') {
+			c = is.get();
+			if (c == '\n') {
+				current += 2;
+				break;
+			}
+		}
+		current++;
+	}
+
+	bool stop = false;
+	while (is.good() && (!stop || current <= end)) {
+	}
+	is.close();
 }
