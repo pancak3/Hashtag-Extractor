@@ -12,8 +12,10 @@ using namespace std;
 struct ResRetriever {
     map<string, int> hash_tag_freq_map;
     string lang;
-    bool is_empty = {true};
+    bool no_valid_info = {true};
+    int line_len = {0};
 };
+
 /**
  *
  * @param file

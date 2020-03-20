@@ -1,7 +1,6 @@
 *.json
 tp
 .vscode/
-CMakeLists.txt
 .idea
 *.o
 *.sh

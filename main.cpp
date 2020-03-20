@@ -5,10 +5,9 @@
 // https://stackoverflow.com/questions/14718124
 // Note that comments/code may be adapted from man pages
 
-#include <fstream>
 #include <iostream>
 #include "retriever.hpp"
-#include <math.h>
+#include <cmath>
 #include <mpi.h>
 #include <sstream>
 #include <sys/stat.h>

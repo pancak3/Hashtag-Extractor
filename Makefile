@@ -1,5 +1,5 @@
 CC=mpiCC
-CFLAGS=-O3
+CFLAGS=-O3 -DDEBUG
 OBJ=process_section.o
 EXE=tp
 

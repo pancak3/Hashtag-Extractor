@@ -34,6 +34,7 @@ ResRetriever infoRetriever(ifstream &file) {
         return result;
     }
 
+    result.line_len = line.length();
 
     // remove ,\n at the end of the line
     line.resize(line.size() - 2);
@@ -46,7 +47,6 @@ ResRetriever infoRetriever(ifstream &file) {
     regex_search(line, matched_strings, pattern_hashTag);
 
     // retrieve hash tags
-    int counter = 0;
     for (auto x : matched_strings) {
 
         if (x.length()) {
@@ -60,7 +60,6 @@ ResRetriever infoRetriever(ifstream &file) {
 #ifdef DEBUG
             cout << x_lower << endl;
 #endif
-            counter++;
         }
 
     }
@@ -69,7 +68,7 @@ ResRetriever infoRetriever(ifstream &file) {
     cout << "[*] Language: " << d["doc"]["lang"].GetString() << endl;
     cout << endl;
 #endif
-    result.is_empty = false;
+    result.no_valid_info = false;
 
     return result;
 };
@@ -86,6 +85,7 @@ void demo() {
 #endif
     list<ResRetriever> res_list;
     ResRetriever res;
+
 
     if (json_file.is_open()) {
         //loop to retrieve info from lines
@@ -104,7 +104,7 @@ void demo() {
     // count hash tag frequencies and language frequencies
     for (i = res_list.begin(); i != res_list.end(); i++) {
         res = *i;
-        if (res.is_empty) continue;
+        if (res.no_valid_info) continue;
         for (j = res.hash_tag_freq_map.begin(); j != res.hash_tag_freq_map.end(); j++) {
             //  cout << j->first << " : " << j->second << endl;
             if (final_hash_tag.end() != final_hash_tag.find(j->first)) {
