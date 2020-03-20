@@ -2,3 +2,4 @@
 tp
 .vscode/
 *.o
+vgcore.*
