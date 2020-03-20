@@ -59,6 +59,9 @@ void perform_work(char* filename, long long file_length) {
 	long long chunk = file_length / size + (file_length % size == 0 ? 0 : 1);
 	long long start = rank * chunk;
 	long long end = std::min(file_length, (rank + 1) * chunk - 1);
+	if (rank == size - 1) {
+		end = file_length - 1;
+	}
 
 	// Print chunks allocated
 	std::stringstream m;
