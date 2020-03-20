@@ -2,7 +2,6 @@ CC=g++
 CFLAGS=-O3
 EXE=tp
 
-
 SRCS=retriever.cpp main.cpp
 
 OBJS = $(SRCS:.c=.o)

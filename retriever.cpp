@@ -9,9 +9,15 @@
 using namespace std;
 using namespace rapidjson;
 
+//punctuations refer to https://www.regular-expressions.info/posixbrackets.html
+regex pattern_hashTag("(?:\\s|^)#[A-Za-z0-9]+(?:\\s|$|[!\"\\#$%&'()*+,./:;<=>?@\\[\\\\\\]^_‘{|}~])");
 
-regex pattern_hashTag("(?:\\s|^)#[A-Za-z0-9\\-\\.\\_]+(?:\\s|$)");
-
+string to_lower(string in) {
+    for (int i = 0; i < in.length(); i++)
+        if ('A' <= in[i] && in[i] <= 'Z') in[i] += 32;
+    in.resize(in.length() - 1);
+    return in;
+}
 
 ResRetriever infoRetriever(ifstream &file) {
     ResRetriever result;
@@ -41,15 +47,17 @@ ResRetriever infoRetriever(ifstream &file) {
     // retrieve hash tags
     int counter = 0;
     for (auto x : matched_strings) {
+
         if (x.length()) {
+            string x_lower = to_lower(x);
             // whether contains key
-            if (result.hash_tag_freq_map.end() != result.hash_tag_freq_map.find(x)) {
-                result.hash_tag_freq_map[x] += 1;
+            if (result.hash_tag_freq_map.end() != result.hash_tag_freq_map.find(x_lower)) {
+                result.hash_tag_freq_map[x_lower] += 1;
             } else {
-                result.hash_tag_freq_map[x] = 1;
+                result.hash_tag_freq_map[x_lower] = 1;
             }
 #ifdef DEBUG
-            cout << x << endl;
+            cout << x_lower << endl;
 #endif
             counter++;
         }
@@ -67,11 +75,12 @@ ResRetriever infoRetriever(ifstream &file) {
 
 void demo() {
     ifstream json_file;
-    json_file.open("./tinyTwitter.json");
-#ifdef DEBUG
+    json_file.open("./bigTwitter.json");
+
     //  remove one more line for debug start the head line of the file
     string line;
     getline(json_file, line);
+#ifdef DEBUG
     cout << "[*] Line: " << line << endl;
 #endif
     list<ResRetriever> res_list;

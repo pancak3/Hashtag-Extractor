@@ -10,4 +10,6 @@ struct ResRetriever {
 
 ResRetriever infoRetriever(ifstream &file, int line_start);
 
+string to_lower(string in);
+
 void demo();
