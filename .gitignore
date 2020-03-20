@@ -1,3 +1,4 @@
 *.json
 tp
 .vscode/
+*.o

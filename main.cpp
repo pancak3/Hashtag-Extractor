@@ -4,6 +4,7 @@
 // References:
 //
 // https://stackoverflow.com/questions/3072795
+// https://stackoverflow.com/questions/14718124
 // Note that comments/code may be adapted from man pages
 
 #include <fstream>
@@ -11,6 +12,8 @@
 #include <math.h>
 #include <mpi.h>
 #include <sys/stat.h>
+#include <sstream>
+#include "process_section.hpp"
 
 long long get_file_length(char* filename);
 void perform_work(char* filename, long long file_length);
@@ -27,7 +30,6 @@ int main(int argc, char** argv) {
 
 	// Get number of bytes in file
 	long long file_length = get_file_length(argv[1]);
-	std::cerr << "File size (in bytes): " << file_length << std::endl;
 
 	perform_work(argv[1], file_length);
 
@@ -45,14 +47,29 @@ void perform_work(char* filename, long long file_length) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+	// Print file size
+	if (rank == 0) {
+		std::stringstream m;
+		m << "File size (in bytes): " << file_length << std::endl;
+		std::cerr << m.str();
+	}
+
 	// Let's start off with even divisions and improve it if we have time
 	// Note: start and end are inclusive
 	long long chunk = file_length / size + (file_length % size == 0 ? 0 : 1);
 	long long start = rank * chunk;
 	long long end = std::min(file_length, (rank + 1) * chunk - 1);
 
-	std::cerr << "rank " << rank << ", start: " << start << ", end: " << end
+	// Print chunks allocated
+	std::stringstream m;
+	m << "rank " << rank << ", start: " << start << ", end: " << end
 			  << std::endl;
+	std::cerr << m.str();
+
+	// For the current process, divide the work further (into threads)
+	// Purpose: though we can have 1 MPI process for each core, let's try to
+	// avoid network communication overheads
+	process_section(filename, start, end);
 }
 
 // Gets length of file

@@ -1,10 +1,11 @@
 CC=mpiCC
 CFLAGS=-O3
+OBJ=process_section.o
 EXE=tp
 
 # Main executable
-main:
-	$(CC) $(CFLAGS) -o $(EXE) main.cpp
+main: $(OBJ)
+	$(CC) $(CFLAGS) -o $(EXE) main.cpp $(OBJ)
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $<
