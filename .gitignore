@@ -6,3 +6,5 @@ CMakeLists.txt
 *.o
 *.sh
 cmake-build-debug
+vgcore.*
+

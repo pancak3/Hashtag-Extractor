@@ -1,13 +1,15 @@
-CC=g++
+CC=mpiCC
 CFLAGS=-O3
+OBJ=process_section.o
 EXE=tp
 
-SRCS=retriever.cpp main.cpp
+SRCS=retriever.cpp main.cpp process_section.cpp
 
 OBJS = $(SRCS:.c=.o)
-
+# Main executable
 main:$(OBJS)
 	$(CC) $(CFLAGS) -o $(EXE) $(OBJS)
+
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $<
