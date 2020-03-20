@@ -3,7 +3,7 @@
 #include <string>
 #include <regex>
 #include "include/rapidjson/document.h"
-#include "retriever.h"
+#include "retriever.hpp"
 #include <list>
 
 using namespace std;
@@ -13,6 +13,7 @@ using namespace rapidjson;
 regex pattern_hashTag("(?:\\s|^)#[A-Za-z0-9]+(?:\\s|$|[!\"\\#$%&'()*+,./:;<=>?@\\[\\\\\\]^_‘{|}~])");
 
 string to_lower(string in) {
+
     for (int i = 0; i < in.length(); i++)
         if ('A' <= in[i] && in[i] <= 'Z') in[i] += 32;
     in.resize(in.length() - 1);
@@ -68,14 +69,14 @@ ResRetriever infoRetriever(ifstream &file) {
     cout << "[*] Language: " << d["doc"]["lang"].GetString() << endl;
     cout << endl;
 #endif
-    result.is_valid = true;
+    result.is_empty = false;
 
     return result;
 };
 
 void demo() {
     ifstream json_file;
-    json_file.open("./bigTwitter.json");
+    json_file.open("./tinyTwitter.json");
 
     //  remove one more line for debug start the head line of the file
     string line;
@@ -85,7 +86,9 @@ void demo() {
 #endif
     list<ResRetriever> res_list;
     ResRetriever res;
+
     if (json_file.is_open()) {
+        //loop to retrieve info from lines
         while (json_file) {
             res = infoRetriever(json_file);
             res_list.push_back(res);
@@ -97,9 +100,11 @@ void demo() {
     map<string, int> final_hash_tag;
     list<ResRetriever>::iterator i;
     map<string, int>::iterator j;
+
+    // count hash tag frequencies and language frequencies
     for (i = res_list.begin(); i != res_list.end(); i++) {
         res = *i;
-        if (!res.is_valid) continue;
+        if (res.is_empty) continue;
         for (j = res.hash_tag_freq_map.begin(); j != res.hash_tag_freq_map.end(); j++) {
             //  cout << j->first << " : " << j->second << endl;
             if (final_hash_tag.end() != final_hash_tag.find(j->first)) {
