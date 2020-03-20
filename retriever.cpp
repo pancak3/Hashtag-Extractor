@@ -27,11 +27,7 @@ ResRetriever infoRetriever(ifstream &file) {
         return result;
     }
 
-#ifdef DEBUG
-    //  remove one more line for debug start the head line of the file
-    getline(file, line);
-    cout << "[*] Line: " << line << endl;
-#endif
+
     // remove ,\n at the end of the line
     line.resize(line.size() - 2);
 
@@ -70,9 +66,14 @@ ResRetriever infoRetriever(ifstream &file) {
 };
 
 void demo() {
-    std::ifstream json_file;
+    ifstream json_file;
     json_file.open("./tinyTwitter.json");
-
+#ifdef DEBUG
+    //  remove one more line for debug start the head line of the file
+    string line;
+    getline(json_file, line);
+    cout << "[*] Line: " << line << endl;
+#endif
     list<ResRetriever> res_list;
     ResRetriever res;
     if (json_file.is_open()) {
@@ -83,10 +84,37 @@ void demo() {
     }
     json_file.close();
 
+    map<string, int> final_lang;
+    map<string, int> final_hash_tag;
     list<ResRetriever>::iterator i;
-    map<std::string, int>::iterator j;
-    while (i != res_list.end()) {
-//        res = res_list.pop_front();
-    }
+    map<string, int>::iterator j;
+    for (i = res_list.begin(); i != res_list.end(); i++) {
+        res = *i;
+        if (!res.is_valid) continue;
+        for (j = res.hash_tag_freq_map.begin(); j != res.hash_tag_freq_map.end(); j++) {
+            //  cout << j->first << " : " << j->second << endl;
+            if (final_hash_tag.end() != final_hash_tag.find(j->first)) {
+                final_hash_tag[j->first] += j->second;
+            } else {
+                final_hash_tag[j->first] = 1;
+            }
+        }
 
+        // cout << res.lang << endl << endl;
+        if (final_lang.end() != final_lang.find(res.lang)) {
+            final_lang[res.lang] += 1;
+        } else {
+            final_lang[res.lang] = 1;
+        }
+    }
+    cout << "[*] HashTag Freq Results" << endl;
+
+    for (j = final_hash_tag.begin(); j != final_hash_tag.end(); j++) {
+        cout << j->first << " : " << j->second << endl;
+    }
+    cout << "[*] Language Freq Results" << endl;
+
+    for (j = final_lang.begin(); j != final_lang.end(); j++) {
+        cout << j->first << " : " << j->second << endl;
+    }
 }
