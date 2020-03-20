@@ -7,7 +7,8 @@ using namespace std;
  * the res structure
  *  res.hash_tag_freq_map stores the hash_tags and frequencies
  *  res.lang stores the language
- *  res.is_empty is true if this res is empty
+ *  res.no_valid_info is true if there is no valid info in the line
+ *  res.line_len is the length of
  */
 struct ResRetriever {
     map<string, int> hash_tag_freq_map;
