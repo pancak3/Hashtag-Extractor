@@ -43,6 +43,9 @@ void process_section(char* filename, long long start, long long end) {
 	for (int i = 0; i < n; i++) {
 		long long thread_start = i * chunk + start;
 		long long thread_end = std::min(total, (i + 1) * chunk - 1) + start;
+		if (i == n - 1) {
+			thread_end = end;
+		}
 
 		// Create threads
 		threads.push_back(std::thread(process_section_thread, filename,
