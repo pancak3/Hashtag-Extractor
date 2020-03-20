@@ -11,8 +11,8 @@
 #include <iostream>
 #include <math.h>
 #include <mpi.h>
-#include <sys/stat.h>
 #include <sstream>
+#include <sys/stat.h>
 #include "process_section.hpp"
 
 long long get_file_length(char* filename);
@@ -63,7 +63,7 @@ void perform_work(char* filename, long long file_length) {
 	// Print chunks allocated
 	std::stringstream m;
 	m << "rank " << rank << ", start: " << start << ", end: " << end
-			  << std::endl;
+	  << std::endl;
 	std::cerr << m.str();
 
 	// For the current process, divide the work further (into threads)

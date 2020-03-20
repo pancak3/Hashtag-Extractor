@@ -8,9 +8,9 @@
 
 #include <iostream>
 #include <math.h>
+#include <sstream>
 #include <thread>
 #include <vector>
-#include <sstream>
 
 void process_section_thread(char* filename, long long start, long long end);
 
@@ -40,7 +40,7 @@ void process_section(char* filename, long long start, long long end) {
 			std::thread(process_section_thread, filename, start, end));
 	}
 
-    // Finish up
+	// Finish up
 	for (std::thread& thread : threads) {
 		if (thread.joinable()) {
 			thread.join();
@@ -51,8 +51,6 @@ void process_section(char* filename, long long start, long long end) {
 // Actually process the section [start, end]
 void process_section_thread(char* filename, long long start, long long end) {
 	std::stringstream m;
-    m << start << " " << end << std::endl;
+	m << start << " " << end << std::endl;
 	std::cerr << m.str();
-
-
 }
