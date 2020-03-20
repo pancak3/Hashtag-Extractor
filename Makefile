@@ -1,7 +1,8 @@
-CC=g++
+CC=mpiCC
 CFLAGS=-O3
 EXE=tp
 
+# Main executable
 main:
 	$(CC) $(CFLAGS) -o $(EXE) main.cpp
 
