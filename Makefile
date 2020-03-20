@@ -2,8 +2,13 @@ CC=g++
 CFLAGS=-O3
 EXE=tp
 
-main:
-	$(CC) $(CFLAGS) -o $(EXE) main.cpp
+
+SRCS=retriever.cpp main.cpp
+
+OBJS = $(SRCS:.c=.o)
+
+main:$(OBJS)
+	$(CC) $(CFLAGS) -o $(EXE) $(OBJS)
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $<

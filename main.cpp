@@ -1,6 +1,7 @@
 #include <iostream>
+#include "retriever.h"
 
 int main() {
-    std::cout << "hello world\n";
+    demo();
     return 0;
 }
