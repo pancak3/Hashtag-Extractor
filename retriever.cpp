@@ -55,7 +55,6 @@ void process_line(string line, map<string, int>& lang_freq_map,
 		lang_freq_map[lang] += 1;
 	} else {
 		lang_freq_map[lang] = 1;
-		cout << lang_freq_map[lang] << endl;
 	}
 
 #ifdef DEBUG
