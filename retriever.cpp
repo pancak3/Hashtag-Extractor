@@ -17,8 +17,8 @@ string to_lower(string in);
 regex pattern_hashtag("(?:\\s|^)#[A-Za-z0-9]+(?:\\s|$|[!\"\\#$%&'()*+,./"
 					  ":;<=>?@\\[\\\\\\]^_‘{|}~])");
 
-void process_line(string line, map<string, int> lang_freq_map,
-				  map<string, int> hashtag_freq_map) {
+void process_line(string line, map<string, int>& lang_freq_map,
+				  map<string, int>& hashtag_freq_map) {
 	// remove ",\r" at the end of the line
 	// TODO: not always true...
 	line.resize(line.size() - 2);
@@ -55,6 +55,7 @@ void process_line(string line, map<string, int> lang_freq_map,
 		lang_freq_map[lang] += 1;
 	} else {
 		lang_freq_map[lang] = 1;
+		cout << lang_freq_map[lang] << endl;
 	}
 
 #ifdef DEBUG
