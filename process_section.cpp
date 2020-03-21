@@ -94,7 +94,6 @@ void process_section_thread(char* filename, long long start, long long end) {
 	string line;
 	map<string, int> lang_freq_map;
 	map<string, int> hashtag_freq_map;
-	map<string, int>::iterator j;
 	long line_length;
 
 	while (is.good() && current <= end) {
@@ -114,6 +113,7 @@ void process_section_thread(char* filename, long long start, long long end) {
 	is.close();
 
 #ifdef DEBUG
+	map<string, int>::iterator j;
 	cout << "[*] HashTag Freq Results" << endl;
 	for (j = hashtag_freq_map.begin(); j != hashtag_freq_map.end(); j++) {
 		cout << j->first << " : " << j->second << endl;
