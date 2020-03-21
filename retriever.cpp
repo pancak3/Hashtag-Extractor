@@ -1,134 +1,72 @@
-#include <iostream>
-#include <map>
-#include <string>
-#include <regex>
-#include "include/rapidjson/document.h"
 #include "retriever.hpp"
+#include <iostream>
 #include <list>
+#include <map>
+#include <regex>
+#include <string>
+#include "include/rapidjson/document.h"
 
 using namespace std;
 using namespace rapidjson;
 
-//punctuations refer to https://www.regular-expressions.info/posixbrackets.html
-regex pattern_hashTag("(?:\\s|^)#[A-Za-z0-9]+(?:\\s|$|[!\"\\#$%&'()*+,./:;<=>?@\\[\\\\\\]^_‘{|}~])");
+// prototype
+string to_lower(string in);
 
-string to_lower(string in) {
+// punctuations refer to
+// https://www.regular-expressions.info/posixbrackets.html
+regex pattern_hashtag("(?:\\s|^)#[A-Za-z0-9]+(?:\\s|$|[!\"\\#$%&'()*+,./"
+					  ":;<=>?@\\[\\\\\\]^_‘{|}~])");
 
-    for (int i = 0; i < in.length(); i++)
-        if ('A' <= in[i] && in[i] <= 'Z') in[i] += 32;
-    in.resize(in.length() - 1);
-    return in;
-}
+void process_line(string line, map<string, int> lang_freq_map,
+				  map<string, int> hashtag_freq_map) {
+	// remove ",\r" at the end of the line
+	// TODO: not always true...
+	line.resize(line.size() - 2);
 
-ResRetriever infoRetriever(ifstream &file) {
-    ResRetriever result;
-
-    string line;
-    Document document;
-    smatch matched_strings;
-
-    getline(file, line);
-
-    // return when occurs empty line -> result.is_valid is false now
-    if (!line.length()) {
-        return result;
-    }
-
-    result.line_len = line.length();
-
-    // remove ,\n at the end of the line
-    line.resize(line.size() - 2);
-
-    Document d;
-    d.Parse(line.c_str());
+	// parse into json
+	Document d;
+	d.Parse(line.c_str());
 #ifdef DEBUG
-    cout << "[*] Tweet content: " << d["doc"]["text"].GetString() << endl;
+	cout << "[*] Tweet content: " << d["doc"]["text"].GetString() << endl;
 #endif
-    regex_search(line, matched_strings, pattern_hashTag);
 
-    // retrieve hash tags
-    for (auto x : matched_strings) {
+	// retrieve hash tags
+	smatch matched_strings;
+	regex_search(line, matched_strings, pattern_hashtag);
+	for (auto matched : matched_strings) {
+		if (matched.length()) {
+			string matched_lower = to_lower(matched);
 
-        if (x.length()) {
-            string x_lower = to_lower(x);
-            // whether contains key
-            if (result.hash_tag_freq_map.end() != result.hash_tag_freq_map.find(x_lower)) {
-                result.hash_tag_freq_map[x_lower] += 1;
-            } else {
-                result.hash_tag_freq_map[x_lower] = 1;
-            }
+			// whether contains key
+			if (hashtag_freq_map.end() !=
+				hashtag_freq_map.find(matched_lower)) {
+				hashtag_freq_map[matched_lower] += 1;
+			} else {
+				hashtag_freq_map[matched_lower] = 1;
+			}
 #ifdef DEBUG
-            cout << x_lower << endl;
+			cout << x_lower << endl;
 #endif
-        }
+		}
+	}
 
-    }
-    result.lang = d["doc"]["lang"].GetString();
+	string lang = d["doc"]["lang"].GetString();
+	if (lang_freq_map.find(lang) != lang_freq_map.end()) {
+		lang_freq_map[lang] += 1;
+	} else {
+		lang_freq_map[lang] = 0;
+	}
+
 #ifdef DEBUG
-    cout << "[*] Language: " << d["doc"]["lang"].GetString() << endl;
-    cout << endl;
+	cout << "[*] Language: " << d["doc"]["lang"].GetString() << endl;
+	cout << endl;
 #endif
-    result.no_valid_info = false;
-
-    return result;
 };
 
-void demo() {
-    ifstream json_file;
-    json_file.open("./tinyTwitter.json");
-
-    //  remove one more line for debug start the head line of the file
-    string line;
-    getline(json_file, line);
-#ifdef DEBUG
-    cout << "[*] Line: " << line << endl;
-#endif
-    list<ResRetriever> res_list;
-    ResRetriever res;
-
-
-    if (json_file.is_open()) {
-        //loop to retrieve info from lines
-        while (json_file) {
-            res = infoRetriever(json_file);
-            res_list.push_back(res);
-        }
-    }
-    json_file.close();
-
-    map<string, int> final_lang;
-    map<string, int> final_hash_tag;
-    list<ResRetriever>::iterator i;
-    map<string, int>::iterator j;
-
-    // count hash tag frequencies and language frequencies
-    for (i = res_list.begin(); i != res_list.end(); i++) {
-        res = *i;
-        if (res.no_valid_info) continue;
-        for (j = res.hash_tag_freq_map.begin(); j != res.hash_tag_freq_map.end(); j++) {
-            //  cout << j->first << " : " << j->second << endl;
-            if (final_hash_tag.end() != final_hash_tag.find(j->first)) {
-                final_hash_tag[j->first] += j->second;
-            } else {
-                final_hash_tag[j->first] = 1;
-            }
-        }
-
-        // cout << res.lang << endl << endl;
-        if (final_lang.end() != final_lang.find(res.lang)) {
-            final_lang[res.lang] += 1;
-        } else {
-            final_lang[res.lang] = 1;
-        }
-    }
-    cout << "[*] HashTag Freq Results" << endl;
-
-    for (j = final_hash_tag.begin(); j != final_hash_tag.end(); j++) {
-        cout << j->first << " : " << j->second << endl;
-    }
-    cout << "[*] Language Freq Results" << endl;
-
-    for (j = final_lang.begin(); j != final_lang.end(); j++) {
-        cout << j->first << " : " << j->second << endl;
-    }
+string to_lower(string in) {
+	for (int i = 0; i < in.length(); i++)
+		if ('A' <= in[i] && in[i] <= 'Z')
+			in[i] += 32;
+	in.resize(in.length() - 1);
+	return in;
 }
