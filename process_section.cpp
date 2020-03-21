@@ -41,14 +41,12 @@ void process_section(char* filename, long long start, long long end) {
 	// 100 MB chunks for now, note that chunk size cannot be less the shortest
 	// line's length
 	long long total = (end - start) + 1;
-	long long chunk_size = 1024 * 1024 * 100;
+	long long chunk_size = 1024 * 1024 * 1;
 	long long n_chunks =
 		total / chunk_size + (total % chunk_size == 0 ? 0 : 1);
 
 #pragma omp parallel
 	{
-		// Get thread number
-		int tid = omp_get_thread_num();
 		// Init maps for each thread
 		unordered_map<string, int> lang_freq_map({}), hashtag_freq_map({});
 		// Open file for each thread
@@ -57,8 +55,8 @@ void process_section(char* filename, long long start, long long end) {
 #pragma omp for
 		for (long long i = 0; i < n_chunks; i++) {
 			// Get chunk start/end
-			long long inner_start = i * chunk_size + start;
-			long long inner_end = (i + 1) * chunk_size - 1;
+			long long inner_start = start + i * chunk_size;
+			long long inner_end = start + (i + 1) * chunk_size - 1;
 			if (i == omp_get_num_threads() - 1) {
 				inner_end = end;
 			}
