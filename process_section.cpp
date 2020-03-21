@@ -96,6 +96,7 @@ void process_section_thread(char* filename, long long start, long long end) {
 	unordered_map<string, int> lang_freq_map;
 	unordered_map<string, int> hashtag_freq_map;
 
+	// TODO: what to do exactly at split...
 	while (is.good() && current <= end) {
 		// Read line
 		getline(is, line);
@@ -104,19 +105,23 @@ void process_section_thread(char* filename, long long start, long long end) {
 		}
 		size_t line_length = line.length();
 		// Remove last 2 characters, if applicable to trim to valid json
-		// Assumption made that each line ends with ,?\r
+		// Assumption made that each line ends with r',?\r$'
 		if (line[line.length() - 1] == '\r') {
 			line.pop_back();
 		}
 		if (line[line.length() - 1] == ',') {
 			line.pop_back();
 		}
+		// The very last line
+		if (line[line.length() - 1] == ']') {
+			break;
+		}
 
 		// Process the line into result
 		process_line(line, lang_freq_map, hashtag_freq_map);
 
-		// Does this include \r\n?
-		current += line_length;
+		// Increment current by line length and 1 for \n
+		current += line_length + 1;
 	}
 	is.close();
 
