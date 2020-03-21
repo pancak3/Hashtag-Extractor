@@ -45,7 +45,7 @@ void process_line(string line, map<string, int> lang_freq_map,
 				hashtag_freq_map[matched_lower] = 1;
 			}
 #ifdef DEBUG
-			cout << x_lower << endl;
+			cout << matched_lower << endl;
 #endif
 		}
 	}

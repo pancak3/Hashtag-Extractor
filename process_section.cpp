@@ -106,7 +106,7 @@ void process_section_thread(char* filename, long long start, long long end) {
 		}
 
 		// Process the line into result
-		line_length = process_line(line, lang_freq_map, hashtag_freq_map);
+		process_line(line, lang_freq_map, hashtag_freq_map);
 
 		// Does this include \r\n?
 		current += line.length();
@@ -115,12 +115,12 @@ void process_section_thread(char* filename, long long start, long long end) {
 
 #ifdef DEBUG
 	cout << "[*] HashTag Freq Results" << endl;
-	for (j = res_hash_tag.begin(); j != res_hash_tag.end(); j++) {
+	for (j = hashtag_freq_map.begin(); j != hashtag_freq_map.end(); j++) {
 		cout << j->first << " : " << j->second << endl;
 	}
 
 	cout << "[*] Language Freq Results" << endl;
-	for (j = res_lang.begin(); j != res_lang.end(); j++) {
+	for (j = lang_freq_map.begin(); j != lang_freq_map.end(); j++) {
 		cout << j->first << " : " << j->second << endl;
 	}
 #endif
