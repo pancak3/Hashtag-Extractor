@@ -1,5 +1,5 @@
 CC=mpiCC
-CFLAGS=-DRESDEBUG -g # -O3 -DDEBUG
+CFLAGS=-fopenmp -DRESDEBUG -g # -O3 -DDEBUG
 OBJ=process_section.o
 EXE=tp
 
