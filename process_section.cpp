@@ -140,10 +140,13 @@ void process_section_thread(std::istream& is, long long start, long long end,
 	while (is.good() && current <= end) {
 		// Read line
 		getline(is, line);
-		if (line.length() == 0) {
+		if (line.length() == 0 && current == end) {
+			// At a \n|{"id boundary, need to read/process next line
+			// since the next thread will skip the first line
 			continue;
 		}
 		size_t line_length = line.length();
+
 		// Remove last 2 characters, if applicable to trim to valid json
 		// Assumption made that each line ends with r',?\r$'
 		if (line[line.length() - 1] == '\r') {
