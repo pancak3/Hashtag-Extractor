@@ -54,7 +54,7 @@ void process_line(string line, map<string, int> lang_freq_map,
 	if (lang_freq_map.find(lang) != lang_freq_map.end()) {
 		lang_freq_map[lang] += 1;
 	} else {
-		lang_freq_map[lang] = 0;
+		lang_freq_map[lang] = 1;
 	}
 
 #ifdef DEBUG
