@@ -102,13 +102,15 @@ void process_section(char* filename, long long start, long long end) {
 void process_section_thread(std::ifstream& is, long long start, long long end,
 							unordered_map<string, int>& lang_freq_map,
 							unordered_map<string, int>& hashtag_freq_map) {
+	char c;
+	string line;
+
 	// Print start offset & end offset
 	std::stringstream m;
 	m << start << " " << end << std::endl;
 	std::cerr << m.str();
 
-	// Open file and seek
-	char c;
+	// Seek to start
 	is.seekg(start);
 
 	// Current position
@@ -127,21 +129,17 @@ void process_section_thread(std::ifstream& is, long long start, long long end,
 		current++;
 	}
 
-	// Gather frequencies
-	string line;
-
-	// TODO: what to do exactly at split...
 	while (is.good() && current <= end) {
 		// Read line
 		getline(is, line);
 		if (line.length() == 0 && current == end) {
 			// At a \n|{"id boundary, need to read/process next line
-			// since the next thread will skip the first line
+			// since the thread for next chunk will skip the first line
 			continue;
 		}
 		size_t line_length = line.length();
 
-		// Remove last 2 characters, if applicable to trim to valid json
+		// Remove last 2 characters, when applicable to trim to valid json
 		// Assumption made that each line ends with r',?\r$'
 		if (line[line.length() - 1] == '\r') {
 			line.pop_back();
