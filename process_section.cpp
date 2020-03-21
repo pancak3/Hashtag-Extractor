@@ -148,7 +148,6 @@ void process_section_thread(std::ifstream& is, long long start, long long end,
 		}
 		// First branch should be taken 99.9% of the time
 		// Only exception should be last 2 lines
-		// Hopefully speculative execution will help here...
 		if (line[line.length() - 1] == ',') {
 			line.pop_back();
 		} else if (line[line.length() - 1] == ']') {
