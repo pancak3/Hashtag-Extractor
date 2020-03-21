@@ -21,6 +21,10 @@ long long get_file_length(const char* filename);
 void perform_work(const char* filename, long long file_length,
 				  std::unordered_map<string, string>& country_codes);
 std::unordered_map<string, string> read_country_csv(const char* filename);
+void combine(std::pair<std::unordered_map<std::string, int>,
+					   std::unordered_map<std::string, int>>
+				 results,
+			 int rank, int size);
 
 int main(int argc, char** argv) {
 	if (argc < 3) {

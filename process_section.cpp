@@ -10,9 +10,11 @@
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
+#include <utility>
 #include "retriever.hpp"
 
 using std::ifstream;
+using std::pair;
 using std::string;
 using std::unordered_map;
 
@@ -24,7 +26,7 @@ void process_section_thread(ifstream& is, long long start, long long end,
 							unordered_map<string, int>& hashtag_freq_map);
 
 // Further subdivides the section [start, end] and assign them to threads
-std::pair<unordered_map<string, int>, unordered_map<string, int>>
+pair<unordered_map<string, int>, unordered_map<string, int>>
 process_section(const char* filename, long long start, long long end) {
 	// Final combined results
 	unordered_map<string, int> combined_lang_freq, combined_hashtag_freq;
@@ -85,7 +87,8 @@ process_section(const char* filename, long long start, long long end) {
 		}
 	}
 
-	return std::pair(combined_lang_freq, combined_hashtag_freq);
+	return pair<unordered_map<string, int>, unordered_map<string, int>>(
+		combined_lang_freq, combined_hashtag_freq);
 }
 
 // Actually process the section [start, end]
