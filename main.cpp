@@ -19,7 +19,7 @@
 // Prototypes
 long long get_file_length(const char* filename);
 void perform_work(const char* filename, long long file_length,
-				  std::unordered_map<string, string> country_codes);
+				  std::unordered_map<string, string>& country_codes);
 std::unordered_map<string, string> read_country_csv(const char* filename);
 
 int main(int argc, char** argv) {
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 
 // Determine work done by each node and joins results
 void perform_work(const char* filename, const long long file_length,
-				  std::unordered_map<string, string> country_codes) {
+				  std::unordered_map<string, string>& country_codes) {
 	int rank, size;
 
 	// Get rank of current communicator + size
