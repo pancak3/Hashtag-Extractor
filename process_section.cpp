@@ -23,7 +23,7 @@ void process_section_thread(ifstream& is, long long start, long long end,
 							unordered_map<string, int>& hashtag_freq_map);
 
 // Further subdivides the section [start, end] and assign them to threads
-void process_section(char* filename, long long start, long long end) {
+void process_section(const char* filename, long long start, long long end) {
 	// Final combined results
 	unordered_map<string, int> combined_lang_freq, combined_hashtag_freq;
 	unordered_map<string, int>::iterator j;

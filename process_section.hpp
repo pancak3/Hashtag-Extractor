@@ -1,1 +1,1 @@
-void process_section(char* filename, long long start, long long end);
+void process_section(const char* filename, long long start, long long end);

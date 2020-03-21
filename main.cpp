@@ -6,16 +6,21 @@
 // Note that comments/code may be adapted from man pages
 
 #include <cmath>
+#include <fstream>
 #include <iostream>
 #include <mpi.h>
 #include <sstream>
+#include <string>
 #include <sys/stat.h>
+#include <unordered_map>
 #include "process_section.hpp"
 #include "retriever.hpp"
 
-long long get_file_length(char* filename);
-
-void perform_work(char* filename, long long file_length);
+// Prototypes
+long long get_file_length(const char* filename);
+void perform_work(const char* filename, long long file_length,
+				  std::unordered_map<string, string> country_codes);
+std::unordered_map<string, string> read_country_csv(const char* filename);
 
 int main(int argc, char** argv) {
 	if (argc < 3) {
@@ -30,7 +35,13 @@ int main(int argc, char** argv) {
 	// Get number of bytes in file
 	long long file_length = get_file_length(argv[1]);
 
-	perform_work(argv[1], file_length);
+	// Read country code CSV
+	// Assuming that there's not much overhead in reading a small file...
+	std::unordered_map<string, string> country_codes =
+		read_country_csv(argv[2]);
+
+	// Split and perform work
+	perform_work(argv[1], file_length, country_codes);
 
 	// Terminates MPI execution environment
 	MPI::Finalize();
@@ -38,8 +49,9 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
-// Determine work down by node and joins results
-void perform_work(char* filename, long long file_length) {
+// Determine work done by each node and joins results
+void perform_work(const char* filename, const long long file_length,
+				  std::unordered_map<string, string> country_codes) {
 	int rank, size;
 
 	// Get rank of current communicator + size
@@ -75,11 +87,34 @@ void perform_work(char* filename, long long file_length) {
 }
 
 // Gets length of file
-long long get_file_length(char* filename) {
+long long get_file_length(const char* filename) {
 	struct stat sb;
 	if (lstat(filename, &sb) == -1) {
 		perror("lstat");
 		std::exit(EXIT_FAILURE);
 	}
 	return sb.st_size;
+}
+
+// Reads csv file of country codes into <code, country> pairs
+std::unordered_map<string, string> read_country_csv(const char* filename) {
+	std::unordered_map<string, string> country_codes;
+	std::ifstream is(filename, std::ifstream::in);
+	if (is.fail()) {
+		std::cerr << "Cannot access country file" << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
+
+	string line;
+	while (is.good()) {
+		// Read line
+		getline(is, line);
+
+		// Split and insert
+		size_t pos = line.rfind(",");
+		country_codes[line.substr(pos + 1, line.length())] =
+			line.substr(0, pos);
+	}
+	is.close();
+	return country_codes;
 }
