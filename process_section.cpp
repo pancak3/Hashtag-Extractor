@@ -51,7 +51,7 @@ void process_section(char* filename, long long start, long long end) {
 			// Get chunk start/end
 			long long inner_start = start + i * chunk_size;
 			long long inner_end = start + (i + 1) * chunk_size - 1;
-			if (i == omp_get_num_threads() - 1) {
+			if (inner_end > end) {
 				inner_end = end;
 			}
 
