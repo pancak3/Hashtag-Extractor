@@ -17,104 +17,108 @@
 #include "retriever.hpp"
 
 // Prototypes
-long long get_file_length(const char* filename);
-void perform_work(const char* filename, long long file_length,
-				  std::unordered_map<string, string>& country_codes);
-std::unordered_map<string, string> read_country_csv(const char* filename);
+long long get_file_length(const char *filename);
 
-int main(int argc, char** argv) {
-	if (argc < 3) {
-		std::cerr << "usage: " << argv[0] << " "
-				  << "input.json country_codes.csv" << std::endl;
-		std::exit(EXIT_FAILURE);
-	}
+void perform_work(const char *filename, long long file_length,
+                  std::unordered_map<string, string> &country_codes);
 
-	// Init executation environment
-	MPI::Init(argc, argv);
+std::unordered_map<string, string> read_country_csv(const char *filename);
 
-	// Get number of bytes in file
-	long long file_length = get_file_length(argv[1]);
+int main(int argc, char **argv) {
+    if (argc < 3) {
+        std::cerr << "usage: " << argv[0] << " "
+                  << "input.json country_codes.csv" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
 
-	// Read country code CSV
-	// Assuming that there's not much overhead in reading a small file...
-	std::unordered_map<string, string> country_codes =
-		read_country_csv(argv[2]);
+    // Init executation environment
+    MPI::Init(argc, argv);
 
-	// Split and perform work
-	perform_work(argv[1], file_length, country_codes);
+    // Get number of bytes in file
+    long long file_length = get_file_length(argv[1]);
 
-	// Terminates MPI execution environment
-	MPI::Finalize();
+    // Read country code CSV
+    // Assuming that there's not much overhead in reading a small file...
+    std::unordered_map<string, string> country_codes =
+            read_country_csv(argv[2]);
 
-	return 0;
+    // Split and perform work
+    perform_work(argv[1], file_length, country_codes);
+
+    // Terminates MPI execution environment
+    MPI::Finalize();
+
+    return 0;
 }
 
 // Determine work done by each node and joins results
-void perform_work(const char* filename, const long long file_length,
-				  std::unordered_map<string, string>& country_codes) {
-	int rank, size;
+void perform_work(const char *filename, const long long file_length,
+                  std::unordered_map<string, string> &country_codes) {
+    int rank, size;
 
-	// Get rank of current communicator + size
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
+    // Get rank of current communicator + size
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-	// Print file size
-	if (rank == 0) {
-		std::stringstream m;
-		m << "File size (in bytes): " << file_length << std::endl;
-		std::cerr << m.str();
-	}
+    // Print file size
+    if (rank == 0) {
+        std::stringstream m;
+        m << "File size (in bytes): " << file_length << std::endl;
+        std::cerr << m.str();
+    }
 
-	// Let's start off with even divisions and improve it if we have time
-	// Note: start and end are inclusive
-	long long chunk = file_length / size + (file_length % size == 0 ? 0 : 1);
-	long long start = rank * chunk;
-	long long end = std::min(file_length, (rank + 1) * chunk - 1);
-	if (rank == size - 1) {
-		end = file_length - 1;
-	}
+    // Let's start off with even divisions and improve it if we have time
+    // Note: start and end are inclusive
+    long long chunk = file_length / size + (file_length % size == 0 ? 0 : 1);
+    long long start = rank * chunk;
+    long long end = std::min(file_length, (rank + 1) * chunk - 1);
+    if (rank == size - 1) {
+        end = file_length - 1;
+    }
 
-	// Print chunks allocated
-	std::stringstream m;
-	m << "rank " << rank << ", start: " << start << ", end: " << end
-	  << std::endl;
-	std::cerr << m.str();
+    // Print chunks allocated
+    std::stringstream m;
+    m << "rank " << rank << ", start: " << start << ", end: " << end
+      << std::endl;
+    std::cerr << m.str();
 
-	// For the current process, divide the work further (into threads)
-	// Purpose: though we can have 1 MPI process for each core, let's try to
-	// avoid network communication overheads
-	process_section(filename, start, end);
+    // For the current process, divide the work further (into threads)
+    // Purpose: though we can have 1 MPI process for each core, let's try to
+    // avoid network communication overheads
+    process_section(filename, start, end, rank, size);
+
+
 }
 
 // Gets length of file
-long long get_file_length(const char* filename) {
-	struct stat sb;
-	if (lstat(filename, &sb) == -1) {
-		perror("lstat");
-		std::exit(EXIT_FAILURE);
-	}
-	return sb.st_size;
+long long get_file_length(const char *filename) {
+    struct stat sb;
+    if (lstat(filename, &sb) == -1) {
+        perror("lstat");
+        std::exit(EXIT_FAILURE);
+    }
+    return sb.st_size;
 }
 
 // Reads csv file of country codes into <code, country> pairs
-std::unordered_map<string, string> read_country_csv(const char* filename) {
-	std::unordered_map<string, string> country_codes;
-	std::ifstream is(filename, std::ifstream::in);
-	if (is.fail()) {
-		std::cerr << "Cannot access country file" << std::endl;
-		std::exit(EXIT_FAILURE);
-	}
+std::unordered_map<string, string> read_country_csv(const char *filename) {
+    std::unordered_map<string, string> country_codes;
+    std::ifstream is(filename, std::ifstream::in);
+    if (is.fail()) {
+        std::cerr << "Cannot access country file" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
 
-	string line;
-	while (is.good()) {
-		// Read line
-		getline(is, line);
+    string line;
+    while (is.good()) {
+        // Read line
+        getline(is, line);
 
-		// Split and insert
-		size_t pos = line.rfind(",");
-		country_codes[line.substr(pos + 1, line.length())] =
-			line.substr(0, pos);
-	}
-	is.close();
-	return country_codes;
+        // Split and insert
+        size_t pos = line.rfind(",");
+        country_codes[line.substr(pos + 1, line.length())] =
+                line.substr(0, pos);
+    }
+    is.close();
+    return country_codes;
 }
