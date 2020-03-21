@@ -18,10 +18,8 @@
 
 // Prototypes
 long long get_file_length(const char* filename);
-
 void perform_work(const char* filename, long long file_length,
 				  std::unordered_map<string, string>& country_codes);
-
 std::unordered_map<string, string> read_country_csv(const char* filename);
 
 int main(int argc, char** argv) {
