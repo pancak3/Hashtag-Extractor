@@ -15,6 +15,9 @@ using std::ifstream;
 using std::string;
 using std::unordered_map;
 
+// Work size (maximum length of file given to thread)
+static const long long CHUNK_SIZE = 1024 * 1024 * 100;
+
 void process_section_thread(ifstream& is, long long start, long long end,
 							unordered_map<string, int>& lang_freq_map,
 							unordered_map<string, int>& hashtag_freq_map);
@@ -29,9 +32,8 @@ void process_section(char* filename, long long start, long long end) {
 	// 100 MB chunks for now, note that chunk size cannot be less the shortest
 	// line's length
 	long long total = (end - start) + 1;
-	long long chunk_size = 1024 * 1024 * 1;
 	long long n_chunks =
-		total / chunk_size + (total % chunk_size == 0 ? 0 : 1);
+		total / CHUNK_SIZE + (total % CHUNK_SIZE == 0 ? 0 : 1);
 
 #pragma omp parallel
 	{
@@ -43,8 +45,8 @@ void process_section(char* filename, long long start, long long end) {
 #pragma omp for
 		for (long long i = 0; i < n_chunks; i++) {
 			// Get chunk start/end
-			long long inner_start = start + i * chunk_size;
-			long long inner_end = start + (i + 1) * chunk_size - 1;
+			long long inner_start = start + i * CHUNK_SIZE;
+			long long inner_end = start + (i + 1) * CHUNK_SIZE - 1;
 			if (inner_end > end) {
 				inner_end = end;
 			}
@@ -144,6 +146,9 @@ void process_section_thread(std::ifstream& is, long long start, long long end,
 		if (line[line.length() - 1] == '\r') {
 			line.pop_back();
 		}
+		// First branch should be taken 99.9% of the time
+		// Only exception should be last 2 lines
+		// Hopefully speculative execution will help here...
 		if (line[line.length() - 1] == ',') {
 			line.pop_back();
 		} else if (line[line.length() - 1] == ']') {
