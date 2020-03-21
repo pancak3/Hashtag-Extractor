@@ -19,10 +19,6 @@ regex pattern_hashtag("(?:\\s|^)#[A-Za-z0-9]+(?:\\s|$|[!\"\\#$%&'()*+,./"
 
 void process_line(string line, unordered_map<string, int>& lang_freq_map,
 				  unordered_map<string, int>& hashtag_freq_map) {
-	// remove ",\r" at the end of the line
-	// TODO: not always true...
-	line.resize(line.size() - 2);
-
 	// parse into json
 	Document d;
 	d.Parse(line.c_str());

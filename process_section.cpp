@@ -95,21 +95,28 @@ void process_section_thread(char* filename, long long start, long long end) {
 	string line;
 	unordered_map<string, int> lang_freq_map;
 	unordered_map<string, int> hashtag_freq_map;
-	long line_length;
 
 	while (is.good() && current <= end) {
 		// Read line
 		getline(is, line);
-		// Bad line?
 		if (line.length() == 0) {
 			continue;
+		}
+		size_t line_length = line.length();
+		// Remove last 2 characters, if applicable to trim to valid json
+		// Assumption made that each line ends with ,?\r
+		if (line[line.length() - 1] == '\r') {
+			line.pop_back();
+		}
+		if (line[line.length() - 1] == ',') {
+			line.pop_back();
 		}
 
 		// Process the line into result
 		process_line(line, lang_freq_map, hashtag_freq_map);
 
 		// Does this include \r\n?
-		current += line.length();
+		current += line_length;
 	}
 	is.close();
 
