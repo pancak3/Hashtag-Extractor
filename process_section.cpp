@@ -154,9 +154,8 @@ void process_section_thread(std::istream& is, long long start, long long end,
 		}
 		if (line[line.length() - 1] == ',') {
 			line.pop_back();
-		}
-		// The very last line
-		if (line[line.length() - 1] == ']') {
+		} else if (line[line.length() - 1] == ']') {
+			// The very last line
 			break;
 		}
 
