@@ -27,12 +27,6 @@ void process_section_thread(std::istream& is, long long start, long long end,
 
 // Further subdivides the section [start, end] and assign them to threads
 void process_section(char* filename, long long start, long long end) {
-	int fd = open(filename, O_RDONLY | O_LARGEFILE);
-	if (fd < 0) {
-		perror("open");
-		std::exit(EXIT_FAILURE);
-	}
-
 	// Final combined results
 	unordered_map<string, int> combined_lang_freq, combined_hashtag_freq;
 	unordered_map<string, int>::iterator j;
