@@ -102,10 +102,13 @@ void process_section(char* filename, long long start, long long end) {
 		cout << j->first << " : " << j->second << endl;
 	}
 
+	long long line_count = 0;
 	cout << "[*] Language Freq Results" << endl;
 	for (j = combined_lang_freq.begin(); j != combined_lang_freq.end(); j++) {
 		cout << j->first << " : " << j->second << endl;
+		line_count += j->second;
 	}
+	cout << "Total: " << line_count << std::endl;
 #endif
 }
 
