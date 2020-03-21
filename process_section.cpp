@@ -2,23 +2,13 @@
 // Division into threads, file reading and joining are managed here
 
 // References:
-// https://en.cppreference.com/w/cpp/thread/thread/hardware_concurrency
 // http://www.cplusplus.com/reference/fstream/ifstream/ifstream/
-// http://www.cplusplus.com/reference/thread/thread/
-// https://thispointer.com/c11-how-to-create-vector-of-thread-objects/
 // https://stackoverflow.com/questions/823479
-// https://stackoverflow.com/questions/922360
-// https://docs.microsoft.com/en-us/cpp/parallel/openmp/reference/openmp-functions?view=vs-2019
 
-#include <fcntl.h>
 #include <fstream>
 #include <iostream>
-#include <math.h>
-#include <omp.h>
 #include <sstream>
-#include <thread>
 #include <unordered_map>
-#include <vector>
 #include "retriever.hpp"
 
 void process_section_thread(std::istream& is, long long start, long long end,
