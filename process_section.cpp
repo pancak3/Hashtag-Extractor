@@ -7,6 +7,7 @@
 // http://www.cplusplus.com/reference/thread/thread/
 // https://thispointer.com/c11-how-to-create-vector-of-thread-objects/
 // https://stackoverflow.com/questions/823479
+// https://stackoverflow.com/questions/922360
 
 #include <fcntl.h>
 #include <fstream>
@@ -14,11 +15,13 @@
 #include <math.h>
 #include <sstream>
 #include <thread>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 #include "retriever.hpp"
 
-void process_section_thread(char* filename, long long start, long long end);
+void process_section_thread(char* filename, long long start, long long end,
+							unordered_map<string, int>& lang_freq_map,
+							unordered_map<string, int>& hashmap_freq_map);
 
 // Further subdivides the section [start, end] and assign them to threads
 void process_section(char* filename, long long start, long long end) {
@@ -37,6 +40,15 @@ void process_section(char* filename, long long start, long long end) {
 		return;
 	}
 
+	// Maps for storing frequency counts
+	std::vector<unordered_map<string, int>> lang_freq_maps, hashtag_freq_maps;
+	for (int i = 0; i < n; i++) {
+		// Init map for each thread
+		unordered_map<string, int> lang_freq_map({}), hashtag_freq_map({});
+		lang_freq_maps.push_back(lang_freq_map);
+		hashtag_freq_maps.push_back(hashtag_freq_map);
+	}
+
 	// Vec for thread
 	std::vector<std::thread> threads;
 
@@ -44,6 +56,7 @@ void process_section(char* filename, long long start, long long end) {
 	long long total = (end - start) + 1;
 	long long chunk = total / n + (total % n == 0 ? 0 : 1);
 	for (int i = 0; i < n; i++) {
+		// Get start/end
 		long long thread_start = i * chunk + start;
 		long long thread_end = std::min(total, (i + 1) * chunk - 1) + start;
 		if (i == n - 1) {
@@ -51,8 +64,9 @@ void process_section(char* filename, long long start, long long end) {
 		}
 
 		// Create threads
-		threads.push_back(std::thread(process_section_thread, filename,
-									  thread_start, thread_end));
+		threads.push_back(std::thread(
+			process_section_thread, filename, thread_start, thread_end,
+			std::ref(lang_freq_maps[i]), std::ref(hashtag_freq_maps[i])));
 	}
 
 	// Finish up
@@ -61,10 +75,54 @@ void process_section(char* filename, long long start, long long end) {
 			thread.join();
 		}
 	}
+
+	// Now combine
+	unordered_map<string, int> combined_lang_freq, combined_hashtag_freq;
+	unordered_map<string, int>::iterator j;
+	for (int i = 0; i < n; i++) {
+		// Unwrap the current map
+		unordered_map<string, int> hashtag_map = hashtag_freq_maps[i];
+		unordered_map<string, int> lang_map = lang_freq_maps[i];
+
+		// Hashtag
+		for (j = hashtag_map.begin(); j != hashtag_map.end(); j++) {
+			if (combined_hashtag_freq.end() !=
+				combined_hashtag_freq.find(j->first)) {
+				combined_hashtag_freq[j->first] += j->second;
+			} else {
+				combined_hashtag_freq[j->first] = j->second;
+			}
+		}
+
+		// Lang
+		for (j = lang_map.begin(); j != lang_map.end(); j++) {
+			if (combined_lang_freq.end() !=
+				combined_lang_freq.find(j->first)) {
+				combined_lang_freq[j->first] += j->second;
+			} else {
+				combined_lang_freq[j->first] = j->second;
+			}
+		}
+	}
+
+#ifdef RESDEBUG
+	cout << "[*] HashTag Freq Results" << endl;
+	for (j = combined_hashtag_freq.begin(); j != combined_hashtag_freq.end();
+		 j++) {
+		cout << j->first << " : " << j->second << endl;
+	}
+
+	cout << "[*] Language Freq Results" << endl;
+	for (j = combined_lang_freq.begin(); j != combined_lang_freq.end(); j++) {
+		cout << j->first << " : " << j->second << endl;
+	}
+#endif
 }
 
 // Actually process the section [start, end]
-void process_section_thread(char* filename, long long start, long long end) {
+void process_section_thread(char* filename, long long start, long long end,
+							unordered_map<string, int>& lang_freq_map,
+							unordered_map<string, int>& hashtag_freq_map) {
 	// Print start offset & end offset
 	std::stringstream m;
 	m << start << " " << end << std::endl;
@@ -93,8 +151,6 @@ void process_section_thread(char* filename, long long start, long long end) {
 
 	// Gather frequencies
 	string line;
-	unordered_map<string, int> lang_freq_map;
-	unordered_map<string, int> hashtag_freq_map;
 
 	// TODO: what to do exactly at split...
 	while (is.good() && current <= end) {
@@ -124,17 +180,4 @@ void process_section_thread(char* filename, long long start, long long end) {
 		current += line_length + 1;
 	}
 	is.close();
-
-#ifdef DEBUG
-	unordered_map<string, int>::iterator j;
-	cout << "[*] HashTag Freq Results" << endl;
-	for (j = hashtag_freq_map.begin(); j != hashtag_freq_map.end(); j++) {
-		cout << j->first << " : " << j->second << endl;
-	}
-
-	cout << "[*] Language Freq Results" << endl;
-	for (j = lang_freq_map.begin(); j != lang_freq_map.end(); j++) {
-		cout << j->first << " : " << j->second << endl;
-	}
-#endif
 }

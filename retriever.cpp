@@ -1,9 +1,9 @@
 #include "retriever.hpp"
 #include <iostream>
 #include <list>
-#include <unordered_map>
 #include <regex>
 #include <string>
+#include <unordered_map>
 #include "include/rapidjson/document.h"
 
 using namespace std;
