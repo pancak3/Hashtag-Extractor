@@ -1,7 +1,7 @@
 #include "retriever.hpp"
 #include <iostream>
 #include <list>
-#include <map>
+#include <unordered_map>
 #include <regex>
 #include <string>
 #include "include/rapidjson/document.h"
@@ -17,8 +17,8 @@ string to_lower(string in);
 regex pattern_hashtag("(?:\\s|^)#[A-Za-z0-9]+(?:\\s|$|[!\"\\#$%&'()*+,./"
 					  ":;<=>?@\\[\\\\\\]^_‘{|}~])");
 
-void process_line(string line, map<string, int>& lang_freq_map,
-				  map<string, int>& hashtag_freq_map) {
+void process_line(string line, unordered_map<string, int>& lang_freq_map,
+				  unordered_map<string, int>& hashtag_freq_map) {
 	// remove ",\r" at the end of the line
 	// TODO: not always true...
 	line.resize(line.size() - 2);

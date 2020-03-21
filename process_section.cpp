@@ -15,6 +15,7 @@
 #include <sstream>
 #include <thread>
 #include <vector>
+#include <unordered_map>
 #include "retriever.hpp"
 
 void process_section_thread(char* filename, long long start, long long end);
@@ -92,8 +93,8 @@ void process_section_thread(char* filename, long long start, long long end) {
 
 	// Gather frequencies
 	string line;
-	map<string, int> lang_freq_map;
-	map<string, int> hashtag_freq_map;
+	unordered_map<string, int> lang_freq_map;
+	unordered_map<string, int> hashtag_freq_map;
 	long line_length;
 
 	while (is.good() && current <= end) {
@@ -113,7 +114,7 @@ void process_section_thread(char* filename, long long start, long long end) {
 	is.close();
 
 #ifdef DEBUG
-	map<string, int>::iterator j;
+	unordered_map<string, int>::iterator j;
 	cout << "[*] HashTag Freq Results" << endl;
 	for (j = hashtag_freq_map.begin(); j != hashtag_freq_map.end(); j++) {
 		cout << j->first << " : " << j->second << endl;
