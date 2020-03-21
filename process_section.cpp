@@ -11,7 +11,11 @@
 #include <unordered_map>
 #include "retriever.hpp"
 
-void process_section_thread(std::istream& is, long long start, long long end,
+using std::ifstream;
+using std::string;
+using std::unordered_map;
+
+void process_section_thread(ifstream& is, long long start, long long end,
 							unordered_map<string, int>& lang_freq_map,
 							unordered_map<string, int>& hashtag_freq_map);
 
@@ -34,7 +38,7 @@ void process_section(char* filename, long long start, long long end) {
 		// Init maps for each thread
 		unordered_map<string, int> lang_freq_map({}), hashtag_freq_map({});
 		// Open file for each thread
-		std::ifstream is(filename, std::ifstream::in);
+		ifstream is(filename, std::ifstream::in);
 
 #pragma omp for
 		for (long long i = 0; i < n_chunks; i++) {
@@ -78,24 +82,24 @@ void process_section(char* filename, long long start, long long end) {
 	}
 
 #ifdef RESDEBUG
-	cout << "[*] HashTag Freq Results" << endl;
+	std::cout << "[*] HashTag Freq Results" << std::endl;
 	for (j = combined_hashtag_freq.begin(); j != combined_hashtag_freq.end();
 		 j++) {
-		cout << j->first << " : " << j->second << endl;
+		std::cout << j->first << " : " << j->second << std::endl;
 	}
 
 	long long line_count = 0;
-	cout << "[*] Language Freq Results" << endl;
+	std::cout << "[*] Language Freq Results" << std::endl;
 	for (j = combined_lang_freq.begin(); j != combined_lang_freq.end(); j++) {
-		cout << j->first << " : " << j->second << endl;
+		std::cout << j->first << " : " << j->second << std::endl;
 		line_count += j->second;
 	}
-	cout << "Total: " << line_count << std::endl;
+	std::cout << "Total: " << line_count << std::endl;
 #endif
 }
 
 // Actually process the section [start, end]
-void process_section_thread(std::istream& is, long long start, long long end,
+void process_section_thread(std::ifstream& is, long long start, long long end,
 							unordered_map<string, int>& lang_freq_map,
 							unordered_map<string, int>& hashtag_freq_map) {
 	// Print start offset & end offset
