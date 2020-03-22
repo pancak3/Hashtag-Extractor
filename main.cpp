@@ -11,8 +11,8 @@
 #include <string>
 #include <sys/stat.h>
 #include <unordered_map>
-#include "main_combine.hpp"
-#include "process_section.hpp"
+#include "combine.hpp"
+#include "threading.hpp"
 
 using std::pair;
 using std::string;
