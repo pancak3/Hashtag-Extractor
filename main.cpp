@@ -21,8 +21,8 @@ long long get_file_length(const char* filename);
 void perform_work(const char* filename, long long file_length,
 				  std::unordered_map<string, string>& country_codes);
 std::unordered_map<string, string> read_country_csv(const char* filename);
-void combine(std::pair<std::unordered_map<std::string, int>,
-					   std::unordered_map<std::string, int>>
+void combine(std::pair<std::unordered_map<std::string, unsigned long>,
+					   std::unordered_map<std::string, unsigned long>>
 				 results,
 			 int rank, int size);
 
@@ -87,19 +87,19 @@ void perform_work(const char* filename, const long long file_length,
 	// For the current process, divide the work further (into threads)
 	// Purpose: though we can have 1 MPI process for each core, let's try to
 	// avoid network communication overheads
-	std::pair<std::unordered_map<std::string, int>,
-			  std::unordered_map<std::string, int>>
+	std::pair<std::unordered_map<std::string, unsigned long>,
+			  std::unordered_map<std::string, unsigned long>>
 		results = process_section(filename, start, end);
 
 	// Combine and print results
 	combine(results, rank, size);
 }
 
-void send_combined_data(unordered_map<string, int> combined_res) {
+void send_combined_data(unordered_map<string, unsigned long> combined_res) {
 	string send_data;
 	int next_msg_len;
 	char test[255];
-	unordered_map<string, int>::iterator j;
+	unordered_map<string, unsigned long>::iterator j;
 
 	for (j = combined_res.begin(); j != combined_res.end(); j++) {
 		// store in [lang/#hashtag 12] format
@@ -111,14 +111,15 @@ void send_combined_data(unordered_map<string, int> combined_res) {
 	}
 }
 
-void combine(std::pair<std::unordered_map<std::string, int>,
-					   std::unordered_map<std::string, int>>
+void combine(std::pair<std::unordered_map<std::string, unsigned long>,
+					   std::unordered_map<std::string, unsigned long>>
 				 results,
 			 int rank, int size) {
-	std::unordered_map<std::string, int> combined_lang_freq = results.first;
-	std::unordered_map<std::string, int> combined_hashtag_freq =
+	std::unordered_map<std::string, unsigned long> combined_lang_freq =
+		results.first;
+	std::unordered_map<std::string, unsigned long> combined_hashtag_freq =
 		results.second;
-	unordered_map<string, int>::iterator j;
+	unordered_map<string, unsigned long>::iterator j;
 
 	// MPI gather results
 	if (rank == 0) {

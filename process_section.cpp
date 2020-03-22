@@ -21,16 +21,19 @@ using std::unordered_map;
 // Work size (maximum length of file given to thread)
 static const long long CHUNK_SIZE = 1024 * 1024 * 100;
 
-void process_section_thread(ifstream& is, long long start, long long end,
-							unordered_map<string, int>& lang_freq_map,
-							unordered_map<string, int>& hashtag_freq_map);
+void process_section_thread(
+	ifstream& is, long long start, long long end,
+	unordered_map<string, unsigned long>& lang_freq_map,
+	unordered_map<string, unsigned long>& hashtag_freq_map);
 
 // Further subdivides the section [start, end] and assign them to threads
-pair<unordered_map<string, int>, unordered_map<string, int>>
+pair<unordered_map<string, unsigned long>,
+	 unordered_map<string, unsigned long>>
 process_section(const char* filename, long long start, long long end) {
 	// Final combined results
-	unordered_map<string, int> combined_lang_freq, combined_hashtag_freq;
-	unordered_map<string, int>::iterator j;
+	unordered_map<string, unsigned long> combined_lang_freq,
+		combined_hashtag_freq;
+	unordered_map<string, unsigned long>::iterator j;
 
 	// Again, split into chunks
 	// 100 MB chunks for now, note that chunk num_worker cannot be less the
@@ -42,7 +45,8 @@ process_section(const char* filename, long long start, long long end) {
 #pragma omp parallel
 	{
 		// Init maps for each thread
-		unordered_map<string, int> lang_freq_map({}), hashtag_freq_map({});
+		unordered_map<string, unsigned long> lang_freq_map({}),
+			hashtag_freq_map({});
 		// Open file for each thread
 		ifstream is(filename, std::ifstream::in);
 
@@ -87,14 +91,16 @@ process_section(const char* filename, long long start, long long end) {
 		}
 	}
 
-	return pair<unordered_map<string, int>, unordered_map<string, int>>(
-		combined_lang_freq, combined_hashtag_freq);
+	return pair<unordered_map<string, unsigned long>,
+				unordered_map<string, unsigned long>>(combined_lang_freq,
+													  combined_hashtag_freq);
 }
 
 // Actually process the section [start, end]
-void process_section_thread(std::ifstream& is, long long start, long long end,
-							unordered_map<string, int>& lang_freq_map,
-							unordered_map<string, int>& hashtag_freq_map) {
+void process_section_thread(
+	std::ifstream& is, long long start, long long end,
+	unordered_map<string, unsigned long>& lang_freq_map,
+	unordered_map<string, unsigned long>& hashtag_freq_map) {
 	char c;
 	string line;
 
