@@ -147,7 +147,7 @@ void process_section_thread(
 		// Only exception should be last 2 lines
 		if (line[line.length() - 1] == ',') {
 			line.pop_back();
-		} else if (line[line.length() - 1] == ']') {
+		} else if (line.length() <= 2) {
 			// The very last line
 			break;
 		}
