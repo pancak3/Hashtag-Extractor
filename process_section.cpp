@@ -5,32 +5,39 @@
 // http://www.cplusplus.com/reference/fstream/ifstream/ifstream/
 // https://stackoverflow.com/questions/823479
 
+#include "process_section.hpp"
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
+#include <utility>
 #include "retriever.hpp"
 
 using std::ifstream;
+using std::pair;
 using std::string;
 using std::unordered_map;
 
 // Work size (maximum length of file given to thread)
 static const long long CHUNK_SIZE = 1024 * 1024 * 100;
 
-void process_section_thread(ifstream& is, long long start, long long end,
-							unordered_map<string, int>& lang_freq_map,
-							unordered_map<string, int>& hashtag_freq_map);
+void process_section_thread(
+	ifstream& is, long long start, long long end,
+	unordered_map<string, unsigned long>& lang_freq_map,
+	unordered_map<string, unsigned long>& hashtag_freq_map);
 
 // Further subdivides the section [start, end] and assign them to threads
-void process_section(const char* filename, long long start, long long end) {
+pair<unordered_map<string, unsigned long>,
+	 unordered_map<string, unsigned long>>
+process_section(const char* filename, long long start, long long end) {
 	// Final combined results
-	unordered_map<string, int> combined_lang_freq, combined_hashtag_freq;
-	unordered_map<string, int>::iterator j;
+	unordered_map<string, unsigned long> combined_lang_freq,
+		combined_hashtag_freq;
+	unordered_map<string, unsigned long>::iterator j;
 
 	// Again, split into chunks
-	// 100 MB chunks for now, note that chunk size cannot be less the shortest
-	// line's length
+	// 100 MB chunks for now, note that chunk num_worker cannot be less the
+	// shortest line's length
 	long long total = (end - start) + 1;
 	long long n_chunks =
 		total / CHUNK_SIZE + (total % CHUNK_SIZE == 0 ? 0 : 1);
@@ -38,7 +45,8 @@ void process_section(const char* filename, long long start, long long end) {
 #pragma omp parallel
 	{
 		// Init maps for each thread
-		unordered_map<string, int> lang_freq_map({}), hashtag_freq_map({});
+		unordered_map<string, unsigned long> lang_freq_map({}),
+			hashtag_freq_map({});
 		// Open file for each thread
 		ifstream is(filename, std::ifstream::in);
 
@@ -83,27 +91,16 @@ void process_section(const char* filename, long long start, long long end) {
 		}
 	}
 
-#ifdef RESDEBUG
-	std::cout << "[*] HashTag Freq Results" << std::endl;
-	for (j = combined_hashtag_freq.begin(); j != combined_hashtag_freq.end();
-		 j++) {
-		std::cout << j->first << " : " << j->second << std::endl;
-	}
-
-	long long line_count = 0;
-	std::cout << "[*] Language Freq Results" << std::endl;
-	for (j = combined_lang_freq.begin(); j != combined_lang_freq.end(); j++) {
-		std::cout << j->first << " : " << j->second << std::endl;
-		line_count += j->second;
-	}
-	std::cout << "Total: " << line_count << std::endl;
-#endif
+	return pair<unordered_map<string, unsigned long>,
+				unordered_map<string, unsigned long>>(combined_lang_freq,
+													  combined_hashtag_freq);
 }
 
 // Actually process the section [start, end]
-void process_section_thread(std::ifstream& is, long long start, long long end,
-							unordered_map<string, int>& lang_freq_map,
-							unordered_map<string, int>& hashtag_freq_map) {
+void process_section_thread(
+	std::ifstream& is, long long start, long long end,
+	unordered_map<string, unsigned long>& lang_freq_map,
+	unordered_map<string, unsigned long>& hashtag_freq_map) {
 	char c;
 	string line;
 
@@ -150,7 +147,7 @@ void process_section_thread(std::ifstream& is, long long start, long long end,
 		// Only exception should be last 2 lines
 		if (line[line.length() - 1] == ',') {
 			line.pop_back();
-		} else if (line[line.length() - 1] == ']') {
+		} else if (line.length() <= 2) {
 			// The very last line
 			break;
 		}

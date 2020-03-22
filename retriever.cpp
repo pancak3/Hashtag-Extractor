@@ -15,8 +15,9 @@ string to_lower(string in);
 regex pattern_hashtag("(?:\\s|^)#[A-Za-z0-9]+(?:\\s|$|[!\"\\#$%&'()*+,./"
 					  ":;<=>?@\\[\\\\\\]^_‘{|}~])");
 
-void process_line(string line, unordered_map<string, int>& lang_freq_map,
-				  unordered_map<string, int>& hashtag_freq_map) {
+void process_line(string line,
+				  unordered_map<string, unsigned long>& lang_freq_map,
+				  unordered_map<string, unsigned long>& hashtag_freq_map) {
 	// parse into json
 	Document d;
 	d.Parse(line.c_str());
@@ -61,6 +62,7 @@ string to_lower(string in) {
 	for (int i = 0; i < in.length(); i++)
 		if ('A' <= in[i] && in[i] <= 'Z')
 			in[i] += 32;
-	in.resize(in.length() - 1);
+	in.pop_back();
+	in.erase(in.begin());
 	return in;
 }
