@@ -18,7 +18,7 @@ using std::string;
 using std::unordered_map;
 
 // Work size (maximum length of file given to thread)
-static const long long CHUNK_SIZE = 1000 * 1000 * 100;
+static const long long CHUNK_SIZE = 1000 * 1000 * 200;
 
 void process_section_thread(
 	ifstream& is, long long start, long long end,
