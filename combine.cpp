@@ -1,4 +1,8 @@
+// References:
+// https://rekols.github.io/2018/04-23/cpp-thousands-separator/
+
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <mpi.h>
 #include <sstream>
@@ -13,14 +17,20 @@ using std::unordered_map;
 
 void combine_maps(unordered_map<string, unsigned long>& freq_map, int rank,
 				  int size);
-void print_results(unordered_map<string, unsigned long>& map);
+
+void easy_print(unordered_map<string, unsigned long>& map,
+				std::function<string(string)> printer);
+
+string format_str(string key_str, unordered_map<string, string> country_codes);
 
 // Calls on functions to combines results from multiple nodes together
 // and print them
 void combine_results(pair<unordered_map<string, unsigned long>,
 						  unordered_map<string, unsigned long>>
 						 results,
-					 int rank, int size) {
+					 int rank, int size,
+					 unordered_map<string, string> country_codes) {
+
 	// Extract from pair
 	unordered_map<string, unsigned long> combined_lang_freq = results.first;
 	unordered_map<string, unsigned long> combined_hashtag_freq =
@@ -30,17 +40,34 @@ void combine_results(pair<unordered_map<string, unsigned long>,
 	combine_maps(combined_lang_freq, rank, size);
 	combine_maps(combined_hashtag_freq, rank, size);
 
+	std::function<string(string)> printer =
+		std::bind(format_str, std::placeholders::_1, country_codes);
 	if (rank == 0) {
-		std::cout << "[*] Language Freq Results" << std::endl;
-		print_results(combined_lang_freq);
-		std::cout << "[*] Hashtag  Freq Results" << std::endl;
-		print_results(combined_hashtag_freq);
+		std::cout << std::endl << "[*] Language Freq Results" << std::endl;
+		easy_print(combined_lang_freq, printer);
+		std::cout << std::endl << "[*] Hashtag Freq Results" << std::endl;
+		easy_print(combined_hashtag_freq, printer);
+	}
+}
+
+string format_str(string key_str,
+				  unordered_map<string, string> country_codes) {
+	if (key_str[0] == '#') {
+		return key_str + ",";
+	} else if ('a' <= key_str[0] && key_str[0] <= 'z') {
+		return country_codes[key_str] + " (" + key_str + "),";
+	} else {
+		for (int i = key_str.length() - 3; i >= 1; i -= 3) {
+			key_str.insert(i, ",");
+		}
+		return key_str;
 	}
 }
 
 // Prints top 10 of <string, unsigned long> maps
 // TODO: function pointer for languages
-void print_results(unordered_map<string, unsigned long>& map) {
+void easy_print(unordered_map<string, unsigned long>& map,
+				std::function<string(string)> printer) {
 	unordered_map<string, unsigned long>::iterator it;
 
 	// Put items of map into vector as pairs for sorting
@@ -57,15 +84,9 @@ void print_results(unordered_map<string, unsigned long>& map) {
 
 	// Print up to 10th element and any ties for 10th place
 	for (int i = 0; pairs[i].second >= freq; i++) {
-		std::cout << pairs[i].first << " " << pairs[i].second << std::endl;
+		std::cout << printer(pairs[i].first) << " "
+				  << printer(std::to_string(pairs[i].second)) << std::endl;
 	}
-
-	// Count total number of entries as sanity check
-	long long line_count = 0;
-	for (it = map.begin(); it != map.end(); it++) {
-		line_count += it->second;
-	}
-	std::cout << "Total: " << line_count << std::endl;
 }
 
 // Combines maps from multiple nodes together
