@@ -1,5 +1,5 @@
 CC=mpiCC
-CFLAGS=-fopenmp -DRESDEBUG -g # -O3 -DDEBUG
+CFLAGS=-fopenmp -DRESDEBUG -g -DDEBUG # -O3
 EXE=tp
 
 SRC=retriever.cpp main.cpp process_section.cpp
