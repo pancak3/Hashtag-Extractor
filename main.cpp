@@ -16,13 +16,17 @@
 #include "process_section.hpp"
 #include "retriever.hpp"
 
+using std::pair;
+using std::string;
+using std::unordered_map;
+
 // Prototypes
 long long get_file_length(const char* filename);
 void perform_work(const char* filename, long long file_length,
-				  std::unordered_map<string, string>& country_codes);
-std::unordered_map<string, string> read_country_csv(const char* filename);
-void combine(std::pair<std::unordered_map<std::string, unsigned long>,
-					   std::unordered_map<std::string, unsigned long>>
+				  unordered_map<string, string>& country_codes);
+unordered_map<string, string> read_country_csv(const char* filename);
+void combine(pair<unordered_map<string, unsigned long>,
+				  unordered_map<string, unsigned long>>
 				 results,
 			 int rank, int size);
 
@@ -55,7 +59,7 @@ int main(int argc, char** argv) {
 
 // Determine work done by each node and joins results
 void perform_work(const char* filename, const long long file_length,
-				  std::unordered_map<string, string>& country_codes) {
+				  unordered_map<string, string>& country_codes) {
 	int rank, size;
 
 	// Get rank of current communicator + size
@@ -87,8 +91,8 @@ void perform_work(const char* filename, const long long file_length,
 	// For the current process, divide the work further (into threads)
 	// Purpose: though we can have 1 MPI process for each core, let's try to
 	// avoid network communication overheads
-	std::pair<std::unordered_map<std::string, unsigned long>,
-			  std::unordered_map<std::string, unsigned long>>
+	pair<unordered_map<string, unsigned long>,
+		 unordered_map<string, unsigned long>>
 		results = process_section(filename, start, end);
 
 	// Combine and print results
@@ -111,13 +115,12 @@ void send_combined_data(unordered_map<string, unsigned long> combined_res) {
 	}
 }
 
-void combine(std::pair<std::unordered_map<std::string, unsigned long>,
-					   std::unordered_map<std::string, unsigned long>>
+void combine(pair<unordered_map<string, unsigned long>,
+				  unordered_map<string, unsigned long>>
 				 results,
 			 int rank, int size) {
-	std::unordered_map<std::string, unsigned long> combined_lang_freq =
-		results.first;
-	std::unordered_map<std::string, unsigned long> combined_hashtag_freq =
+	unordered_map<string, unsigned long> combined_lang_freq = results.first;
+	unordered_map<string, unsigned long> combined_hashtag_freq =
 		results.second;
 	unordered_map<string, unsigned long>::iterator j;
 
@@ -258,8 +261,8 @@ long long get_file_length(const char* filename) {
 }
 
 // Reads csv file of country codes into <code, country> pairs
-std::unordered_map<string, string> read_country_csv(const char* filename) {
-	std::unordered_map<string, string> country_codes;
+unordered_map<string, string> read_country_csv(const char* filename) {
+	unordered_map<string, string> country_codes;
 	std::ifstream is(filename, std::ifstream::in);
 	if (is.fail()) {
 		std::cerr << "Cannot access country file" << std::endl;
