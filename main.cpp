@@ -3,22 +3,16 @@
 
 // References:
 // https://stackoverflow.com/questions/14718124
-// https://stackoverflow.com/questions/5122804
-// https://stackoverflow.com/questions/31323135
 // Note that comments/code may be adapted from man pages
 
-#include <algorithm>
-#include <cmath>
 #include <fstream>
-#include <iostream>
 #include <mpi.h>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
 #include <unordered_map>
-#include <vector>
-#include "process_section.hpp"
-#include "retriever.hpp"
+#include "combine.hpp"
+#include "threading.hpp"
 
 using std::pair;
 using std::string;
@@ -26,19 +20,9 @@ using std::unordered_map;
 
 // Prototypes
 long long get_file_length(const char* filename);
-
 void perform_work(const char* filename, long long file_length,
 				  unordered_map<string, string>& country_codes);
-
 unordered_map<string, string> read_country_csv(const char* filename);
-
-void receive_content_to_res(unordered_map<string, unsigned long>& res,
-							int from_rank);
-
-void combine(pair<unordered_map<string, unsigned long>,
-				  unordered_map<string, unsigned long>>
-				 results,
-			 int rank, int size);
 
 int main(int argc, char** argv) {
 	if (argc < 3) {
@@ -105,133 +89,8 @@ void perform_work(const char* filename, const long long file_length,
 		 unordered_map<string, unsigned long>>
 		results = process_section(filename, start, end);
 
-	// Combine and print results
-	combine(results, rank, size);
-}
-
-void send_combined_data(unordered_map<string, unsigned long> combined_res) {
-	string content;
-	int content_len = 0;
-	int freq[combined_res.size()];
-
-	unordered_map<string, unsigned long>::iterator j;
-	int count = 0;
-	for (j = combined_res.begin(); j != combined_res.end(); j++) {
-		content += j->first + ' ';
-		content_len += j->first.length() + 1;
-		freq[count] = j->second;
-		count++;
-	}
-	// Send length
-	MPI_Send(&content_len, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-	MPI_Send(&content[0], content_len, MPI_CHAR, 0, 1, MPI_COMM_WORLD);
-	MPI_Send(&count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-	MPI_Send(freq, count, MPI_INT, 0, 2, MPI_COMM_WORLD);
-}
-
-void receive_content_to_res(unordered_map<string, unsigned long>& res,
-							int from_rank) {
-	// receive hash tags content
-	int content_len;
-	MPI_Recv(&content_len, 1, MPI_INT, from_rank, 0, MPI_COMM_WORLD,
-			 MPI_STATUS_IGNORE);
-	char content[content_len];
-	MPI_Recv(content, content_len, MPI_CHAR, from_rank, 1, MPI_COMM_WORLD,
-			 MPI_STATUS_IGNORE);
-
-	// receive hash tag freq
-	int freq_len;
-	MPI_Recv(&freq_len, 1, MPI_INT, from_rank, 0, MPI_COMM_WORLD,
-			 MPI_STATUS_IGNORE);
-	int freq[freq_len];
-	MPI_Recv(freq, freq_len, MPI_INT, from_rank, 2, MPI_COMM_WORLD,
-			 MPI_STATUS_IGNORE);
-
-	string key;
-	int count = 0;
-	for (int l = 0; l < content_len; ++l) {
-		if (content[l] != ' ') {
-			key.push_back(content[l]);
-		} else {
-			if (res.end() != res.find(key)) {
-				res[key] += freq[count];
-			} else {
-				res[key] = freq[count];
-			}
-			key = "";
-			count++;
-		}
-	}
-}
-
-void combine(pair<unordered_map<string, unsigned long>,
-				  unordered_map<string, unsigned long>>
-				 results,
-			 int rank, int size) {
-	unordered_map<string, unsigned long> combined_lang_freq = results.first;
-	unordered_map<string, unsigned long> combined_hashtag_freq =
-		results.second;
-	unordered_map<string, unsigned long>::iterator j;
-
-	// MPI gather results
-	if (rank == 0) {
-
-		for (int i = 1; i < size; i++) {
-			receive_content_to_res(combined_hashtag_freq, i);
-			receive_content_to_res(combined_lang_freq, i);
-		}
-
-#ifdef DEBUG
-
-		std::cout << "[*] Received all." << std::endl;
-#endif
-
-	} else {
-		// Send hash tag frequencies
-		send_combined_data(combined_hashtag_freq);
-		// Send lang frequencies
-		send_combined_data(combined_lang_freq);
-
-#ifdef DEBUG
-		std::cout << "[*] Rank done: " << rank << std::endl;
-#endif
-	}
-
-	if (rank == 0) {
-		std::cout << "[*] HashTag Freq Results" << std::endl;
-
-		for (j = combined_hashtag_freq.begin();
-			 j != combined_hashtag_freq.end(); j++) {
-			std::cout << j->first << " : " << j->second << std::endl;
-		}
-
-		std::cout << "[*] Language Freq Results" << std::endl;
-
-		// Add combined results to vector as pairs for sorting
-		std::vector<pair<string, unsigned long>> lang_pairs(
-			combined_lang_freq.begin(), combined_lang_freq.end());
-		std::sort(
-			lang_pairs.begin(), lang_pairs.end(),
-			[](pair<string, unsigned long>& a, pair<string, unsigned long> b) {
-				return a.second > b.second;
-			});
-
-		// Get frequency of 10th element
-		unsigned long freq = lang_pairs[9].second;
-
-		// Print out up to 10th element and any ties for 10th place
-		for (int i = 0; lang_pairs[i].second >= freq; i++) {
-			std::cout << lang_pairs[i].first << " " << lang_pairs[i].second
-					  << std::endl;
-		}
-
-		long long line_count = 0;
-		for (j = combined_lang_freq.begin(); j != combined_lang_freq.end();
-			 j++) {
-			line_count += j->second;
-		}
-		std::cout << "Total: " << line_count << std::endl;
-	}
+	// Combine results from multiple nodes and print
+	combine_results(results, rank, size,country_codes);
 }
 
 // Gets length of file

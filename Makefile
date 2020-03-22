@@ -1,13 +1,13 @@
 CC=mpiCC
-CFLAGS=-fopenmp -DRESDEBUG -g -DDEBUG # -O3
+CFLAGS=-fopenmp -O3
 EXE=tp
 
-SRC=retriever.cpp main.cpp process_section.cpp
+SRC=combine.cpp threading.cpp line.cpp
 OBJ = $(SRC:.cpp=.o)
 
 # Main executable
-main: $(OBJ)
-	$(CC) $(CFLAGS) -o $(EXE) $(OBJ)
+main: $(OBJ) main.cpp
+	$(CC) $(CFLAGS) -o $(EXE) $(OBJ) main.cpp
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $<
