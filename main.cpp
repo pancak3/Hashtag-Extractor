@@ -5,14 +5,17 @@
 // https://stackoverflow.com/questions/14718124
 // https://stackoverflow.com/questions/5122804
 // https://stackoverflow.com/questions/31323135
+// https://stackoverflow.com/questions/5689003
 // Note that comments/code may be adapted from man pages
 
 #include <algorithm>
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <mpi.h>
 #include <sstream>
+#include <stdlib.h>
 #include <string>
 #include <sys/stat.h>
 #include <unordered_map>
@@ -119,11 +122,113 @@ void send_combined_data(unordered_map<string, unsigned long> combined_res) {
 	}
 }
 
+// Prints top 10 of <string, unsigned long> maps
+// TODO: function pointer for languages
+void print_results(unordered_map<string, unsigned long>& map) {
+	unordered_map<string, unsigned long>::iterator it;
+
+	// Add combined results to vector as pairs for sorting
+	std::vector<pair<string, unsigned long>> pairs(map.begin(), map.end());
+	std::sort(
+		pairs.begin(), pairs.end(),
+		[](pair<string, unsigned long>& a, pair<string, unsigned long> b) {
+			return a.second > b.second;
+		});
+
+	// Get frequency of 10th element
+	unsigned long freq = pairs[9].second;
+
+	// Print out up to 10th element and any ties for 10th place
+	for (int i = 0; pairs[i].second >= freq; i++) {
+		std::cout << pairs[i].first << " " << pairs[i].second << std::endl;
+	}
+
+	long long line_count = 0;
+	for (it = map.begin(); it != map.end(); it++) {
+		line_count += it->second;
+	}
+	std::cout << "Total: " << line_count << std::endl;
+}
+
+void combine_lang(unordered_map<string, unsigned long>& lang_freq, int rank,
+				  int size) {
+	unordered_map<string, unsigned long>::iterator it;
+
+	// Rank not 0, send results to rank 0
+	if (rank != 0) {
+		std::vector<string> lang_codes;
+		std::vector<unsigned long> lang_frequencies;
+
+		// Elements in map to 2 vectors
+		for (it = lang_freq.begin(); it != lang_freq.end(); it++) {
+			lang_codes.push_back(it->first);
+			lang_frequencies.push_back(it->second);
+		}
+
+		// Combine lang_codes to comma separated string
+		std::stringstream combined;
+		std::copy(lang_codes.begin(), lang_codes.end(),
+				  std::ostream_iterator<string>(combined, ","));
+
+		// Number of language codes/value pairs
+		unsigned long count = lang_frequencies.size();
+		// Length of language code string
+		unsigned long length = combined.str().length();
+
+		// Send all to first node
+		MPI_Send(&count, 1, MPI_UNSIGNED_LONG, 0, 0, MPI_COMM_WORLD);
+		MPI_Send(&length, 1, MPI_UNSIGNED_LONG, 0, 1, MPI_COMM_WORLD);
+		MPI_Send(combined.str().c_str(), length, MPI_CHAR, 0, 2,
+				 MPI_COMM_WORLD);
+		MPI_Send(&lang_frequencies[0], count, MPI_UNSIGNED_LONG, 0, 3,
+				 MPI_COMM_WORLD);
+
+		return;
+	}
+
+	// Rank 0/node 0
+	for (int i = 1; i < size; i++) {
+		unsigned long count;
+		unsigned long length;
+
+		// Receive length/count
+		MPI_Recv(&length, 1, MPI_UNSIGNED_LONG, i, 1, MPI_COMM_WORLD, NULL);
+		MPI_Recv(&count, 1, MPI_UNSIGNED_LONG, i, 0, MPI_COMM_WORLD, NULL);
+
+		// Receive arrays
+		unsigned long* freq =
+			(unsigned long*)malloc(sizeof(unsigned long) * count);
+		char* codes = (char*)malloc(sizeof(char) * (length + 1));
+		if (codes == NULL || freq == NULL) {
+			std::cerr << "Malloc failure" << std::endl;
+			std::exit(1);
+		}
+		MPI_Recv(freq, count, MPI_UNSIGNED_LONG, i, 2, MPI_COMM_WORLD, NULL);
+		MPI_Recv(codes, length, MPI_CHAR, i, 3, MPI_COMM_WORLD, NULL);
+		codes[length] = '\0';
+
+		// Add frequencies of node to map
+		for (unsigned long i = 0; i < count; i++) {
+			char* code = strtok(codes, ",");
+			lang_freq[code] += freq[i];
+		}
+
+		free(freq);
+		free(codes);
+	}
+
+	std::cout << "[*] Language Freq Results" << std::endl;
+	print_results(lang_freq);
+}
+
 void combine(pair<unordered_map<string, unsigned long>,
 				  unordered_map<string, unsigned long>>
 				 results,
 			 int rank, int size) {
 	unordered_map<string, unsigned long> combined_lang_freq = results.first;
+	combine_lang(combined_lang_freq, rank, size);
+
+
 	unordered_map<string, unsigned long> combined_hashtag_freq =
 		results.second;
 	unordered_map<string, unsigned long>::iterator j;
@@ -239,35 +344,8 @@ void combine(pair<unordered_map<string, unsigned long>,
 
 		for (j = combined_hashtag_freq.begin();
 			 j != combined_hashtag_freq.end(); j++) {
-			std::cout << j->first << " : " << j->second << std::endl;
+			// std::cout << j->first << " : " << j->second << std::endl;
 		}
-
-		std::cout << "[*] Language Freq Results" << std::endl;
-
-		// Add combined results to vector as pairs for sorting
-		std::vector<pair<string, unsigned long>> lang_pairs(
-			combined_lang_freq.begin(), combined_lang_freq.end());
-		std::sort(
-			lang_pairs.begin(), lang_pairs.end(),
-			[](pair<string, unsigned long>& a, pair<string, unsigned long> b) {
-				return a.second > b.second;
-			});
-
-		// Get frequency of 10th element
-		unsigned long freq = lang_pairs[9].second;
-
-		// Print out up to 10th element and any ties for 10th place
-		for (int i = 0; lang_pairs[i].second >= freq; i++) {
-			std::cout << lang_pairs[i].first << " " << lang_pairs[i].second
-					  << std::endl;
-		}
-
-		long long line_count = 0;
-		for (j = combined_lang_freq.begin(); j != combined_lang_freq.end();
-			 j++) {
-			line_count += j->second;
-		}
-		std::cout << "Total: " << line_count << std::endl;
 	}
 }
 
