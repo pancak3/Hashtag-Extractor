@@ -103,10 +103,12 @@ void process_section_thread(
 	char c;
 	string line;
 
+#ifdef DEBUG
 	// Print start offset & end offset
 	std::stringstream m;
 	m << start << " " << end << std::endl;
 	std::cerr << m.str();
+#endif
 
 	// Seek to start
 	is.seekg(start);

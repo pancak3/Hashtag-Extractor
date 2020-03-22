@@ -5,6 +5,8 @@
 // https://stackoverflow.com/questions/14718124
 // Note that comments/code may be adapted from man pages
 
+#include <chrono>
+#include <ctime>
 #include <fstream>
 #include <mpi.h>
 #include <sstream>
@@ -20,8 +22,10 @@ using std::unordered_map;
 
 // Prototypes
 long long get_file_length(const char* filename);
+
 void perform_work(const char* filename, long long file_length,
 				  unordered_map<string, string>& country_codes);
+
 unordered_map<string, string> read_country_csv(const char* filename);
 
 int main(int argc, char** argv) {
@@ -31,8 +35,12 @@ int main(int argc, char** argv) {
 		std::exit(EXIT_FAILURE);
 	}
 
+	auto start_ts = std::chrono::system_clock::now();
+
 	// Init executation environment
 	MPI::Init(argc, argv);
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 	// Get number of bytes in file
 	long long file_length = get_file_length(argv[1]);
@@ -47,6 +55,13 @@ int main(int argc, char** argv) {
 
 	// Terminates MPI execution environment
 	MPI::Finalize();
+	if (!rank) {
+		std::chrono::duration<double> elapsed_seconds =
+			std::chrono::system_clock::now() - start_ts;
+		std::cout << std::endl
+				  << "[*] Time cost: " << elapsed_seconds.count() << " seconds"
+				  << std::endl;
+	}
 
 	return 0;
 }
@@ -63,7 +78,7 @@ void perform_work(const char* filename, const long long file_length,
 	// Print file size
 	if (rank == 0) {
 		std::stringstream m;
-		m << "File size (in bytes): " << file_length << std::endl;
+		m << "[*] File size (in bytes): " << file_length << std::endl;
 		std::cerr << m.str();
 	}
 
@@ -76,11 +91,13 @@ void perform_work(const char* filename, const long long file_length,
 		end = file_length - 1;
 	}
 
+#ifdef DEBUG
 	// Print chunks allocated
 	std::stringstream m;
 	m << "rank " << rank << ", start: " << start << ", end: " << end
 	  << std::endl;
 	std::cerr << m.str();
+#endif
 
 	// For the current process, divide the work further (into threads)
 	// Purpose: though we can have 1 MPI process for each core, let's try to
@@ -90,7 +107,7 @@ void perform_work(const char* filename, const long long file_length,
 		results = process_section(filename, start, end);
 
 	// Combine results from multiple nodes and print
-	combine_results(results, rank, size,country_codes);
+	combine_results(results, rank, size, country_codes);
 }
 
 // Gets length of file
