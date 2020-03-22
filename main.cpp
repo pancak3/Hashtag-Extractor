@@ -90,7 +90,7 @@ void perform_work(const char* filename, const long long file_length,
 		results = process_section(filename, start, end);
 
 	// Combine results from multiple nodes and print
-	combine_results(results, rank, size);
+	combine_results(results, rank, size,country_codes);
 }
 
 // Gets length of file
