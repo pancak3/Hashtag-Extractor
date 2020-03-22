@@ -47,6 +47,14 @@ void combine_results(pair<unordered_map<string, unsigned long>,
 	}
 }
 
+// Formats a number according to specification
+string format_number(string number_str) {
+	for (int i = number_str.length() - 3; i >= 1; i -= 3) {
+		number_str.insert(i, ",");
+	}
+	return number_str;
+}
+
 // Formats a country code
 string format_country_code(unordered_map<string, string> country_codes,
 						   string key_str) {
@@ -72,12 +80,13 @@ void easy_print(unordered_map<string, unsigned long>& map,
 		});
 
 	// Get frequency of 10th element
-	unsigned long freq = pairs[9].second;
+	unsigned long freq = pairs[std::min(9UL, pairs.size() - 1)].second;
 
 	// Print up to 10th element and any ties for 10th place
 	for (int i = 0; pairs[i].second >= freq; i++) {
 		std::cout << printer(pairs[i].first) << ", "
-				  << std::to_string(pairs[i].second) << std::endl;
+				  << format_number(std::to_string(pairs[i].second))
+				  << std::endl;
 	}
 }
 
