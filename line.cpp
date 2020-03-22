@@ -21,9 +21,6 @@ void process_line(string line,
 	// parse into json
 	Document d;
 	d.Parse(line.c_str());
-#ifdef DEBUG
-	cout << "[*] Tweet content: " << d["doc"]["text"].GetString() << endl;
-#endif
 
 	// retrieve hash tags
 	smatch matched_strings;
@@ -39,9 +36,6 @@ void process_line(string line,
 			} else {
 				hashtag_freq_map[matched_lower] = 1;
 			}
-#ifdef DEBUG
-			cout << matched_lower << endl;
-#endif
 		}
 	}
 
@@ -51,11 +45,6 @@ void process_line(string line,
 	} else {
 		lang_freq_map[lang] = 1;
 	}
-
-#ifdef DEBUG
-	cout << "[*] Language: " << d["doc"]["lang"].GetString() << endl;
-	cout << endl;
-#endif
 };
 
 string to_lower(string in) {
