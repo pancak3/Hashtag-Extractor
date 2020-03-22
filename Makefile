@@ -2,7 +2,7 @@ CC=mpiCC
 CFLAGS=-fopenmp -DRESDEBUG -g # -O3 -DDEBUG
 EXE=tp
 
-SRC=retriever.cpp main.cpp process_section.cpp
+SRC=retriever.cpp main.cpp process_section.cpp main_combine.cpp
 OBJ = $(SRC:.cpp=.o)
 
 # Main executable
