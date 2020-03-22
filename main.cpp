@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
 	// Terminates MPI execution environment
 	MPI::Finalize();
 
-	// Tiem taken
+	// Time taken
 	if (!rank) {
 		std::chrono::duration<double> elapsed_seconds =
 			std::chrono::system_clock::now() - start_ts;
