@@ -35,8 +35,7 @@ process_section(const char* filename, long long start, long long end) {
 	unordered_map<string, unsigned long>::iterator j;
 
 	// Again, split into chunks
-	// 100 MB chunks for now, note that chunk num_worker cannot be less the
-	// shortest line's length
+	// Note that CHUNK_SIZE cannot be less than length of shortest line
 	long long total = (end - start) + 1;
 	long long n_chunks =
 		total / CHUNK_SIZE + (total % CHUNK_SIZE == 0 ? 0 : 1);
@@ -64,7 +63,7 @@ process_section(const char* filename, long long start, long long end) {
 		}
 		is.close();
 
-		// Combine it together
+		// Combine together thread by thread (not concurrently)
 #pragma omp critical
 		{
 			// Hashtag
