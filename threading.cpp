@@ -49,7 +49,7 @@ process_section(const char* filename, long long start, long long end) {
 		// Open file for each thread
 		ifstream is(filename, std::ifstream::in);
 
-#pragma omp for
+#pragma omp for ordered
 		for (long long i = 0; i < n_chunks; i++) {
 			// Get chunk start/end
 			long long inner_start = start + i * CHUNK_SIZE;
@@ -105,7 +105,7 @@ void process_section_thread(
 
 	// Print start offset & end offset
 	std::stringstream m;
-	m << start << " " << end << std::endl;
+	m << "Thread started work on: " << start << " " << end << std::endl;
 	std::cerr << m.str();
 
 	// Seek to start

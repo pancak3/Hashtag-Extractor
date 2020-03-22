@@ -78,8 +78,8 @@ void perform_work(const char* filename, const long long file_length,
 
 	// Print chunks allocated
 	std::stringstream m;
-	m << "rank " << rank << ", start: " << start << ", end: " << end
-	  << std::endl;
+	m << "Rank " << rank << " assigned: start: " << start
+	  << ", end: " << end << std::endl;
 	std::cerr << m.str();
 
 	// For the current process, divide the work further (into threads)
