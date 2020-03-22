@@ -78,7 +78,8 @@ void perform_work(const char* filename, const long long file_length,
 	// Print file size
 	if (rank == 0) {
 		std::stringstream m;
-		m << "[*] File size (in bytes): " << file_length << std::endl;
+		m << "[*] File (in bytes): " << filename << " " << file_length
+		  << std::endl;
 		std::cerr << m.str();
 	}
 
