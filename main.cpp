@@ -3,9 +3,6 @@
 
 // References:
 // https://stackoverflow.com/questions/14718124
-// https://stackoverflow.com/questions/5122804
-// https://stackoverflow.com/questions/31323135
-// https://stackoverflow.com/questions/5689003
 // Note that comments/code may be adapted from man pages
 
 #include <fstream>
@@ -92,8 +89,8 @@ void perform_work(const char* filename, const long long file_length,
 		 unordered_map<string, unsigned long>>
 		results = process_section(filename, start, end);
 
-	// Combine and print results
-	combine(results, rank, size);
+	// Combine results from multiple nodes and print
+	combine_results(results, rank, size);
 }
 
 // Gets length of file
