@@ -3,8 +3,11 @@
 
 // References:
 // https://stackoverflow.com/questions/14718124
+// https://stackoverflow.com/questions/5122804
+// https://stackoverflow.com/questions/31323135
 // Note that comments/code may be adapted from man pages
 
+#include <algorithm>
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -13,6 +16,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <unordered_map>
+#include <vector>
 #include "process_section.hpp"
 #include "retriever.hpp"
 
@@ -230,24 +234,41 @@ void combine(pair<unordered_map<string, unsigned long>,
 		MPI_Send(send_data.c_str(), msg_len, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
 	}
 
-	//#ifdef RESDEBUG
 	if (rank == 0) {
 		std::cout << "[*] HashTag Freq Results" << std::endl;
+
 		for (j = combined_hashtag_freq.begin();
 			 j != combined_hashtag_freq.end(); j++) {
 			std::cout << j->first << " : " << j->second << std::endl;
 		}
 
-		long long line_count = 0;
 		std::cout << "[*] Language Freq Results" << std::endl;
+
+		// Add combined results to vector as pairs for sorting
+		std::vector<pair<string, unsigned long>> lang_pairs(
+			combined_lang_freq.begin(), combined_lang_freq.end());
+		std::sort(
+			lang_pairs.begin(), lang_pairs.end(),
+			[](pair<string, unsigned long>& a, pair<string, unsigned long> b) {
+				return a.second > b.second;
+			});
+
+		// Get frequency of 10th element
+		unsigned long freq = lang_pairs[9].second;
+
+		// Print out up to 10th element and any ties for 10th place
+		for (int i = 0; lang_pairs[i].second >= freq; i++) {
+			std::cout << lang_pairs[i].first << " " << lang_pairs[i].second
+					  << std::endl;
+		}
+
+		long long line_count = 0;
 		for (j = combined_lang_freq.begin(); j != combined_lang_freq.end();
 			 j++) {
-			std::cout << j->first << " : " << j->second << std::endl;
 			line_count += j->second;
 		}
 		std::cout << "Total: " << line_count << std::endl;
 	}
-	//#endif
 }
 
 // Gets length of file
