@@ -6,6 +6,7 @@
 #SBATCH --nodes=2
 #SBATCH --ntasks=2
 #SBATCH --cpus-per-task=4
+export OMP_NUM_THREADS=4
 
 # The maximum running time of the job in days-hours:mins:sec
 #SBATCH --time=0-0:59:00
