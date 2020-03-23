@@ -43,6 +43,10 @@ int main(int argc, char** argv) {
 	int rank, size;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	if (!rank) {
+		std::cout << "[*] " << size << " nodes in total. Rank 0 has "
+				  << omp_get_max_threads() << " threads" << std::endl;
+	}
 
 	// Get number of bytes in file
 	long long file_length = get_file_length(argv[1]);
@@ -62,7 +66,7 @@ int main(int argc, char** argv) {
 
 	if (!rank) {
 		std::cout << std::endl
-				  << "[*] " << size << "  in total. Rank 0 has "
+				  << "[*] " << size << " nodes in total. Rank 0 has "
 				  << omp_get_max_threads() << " threads" << std::endl;
 		std::chrono::duration<double> elapsed_seconds =
 			std::chrono::system_clock::now() - start_ts;

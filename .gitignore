@@ -5,4 +5,5 @@ tp
 *.o
 cmake-build-debug
 vgcore.*
+*.out
 
