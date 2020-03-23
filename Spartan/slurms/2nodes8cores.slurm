@@ -1,9 +1,11 @@
 #!/bin/bash
 #SBATCH --partition=cloud
 #SBATCH --job-name="comp90024-p1"
-#SBATCH --nodes = 2
-#SBATCH --ntasks = 2
-#SBATCH --cpus-per-task = 4
+#SBATCH --mail-user=example@mail.coom
+
+#SBATCH --nodes=2
+#SBATCH --ntasks=2
+#SBATCH --cpus-per-task=4
 
 # The maximum running time of the job in days-hours:mins:sec
 #SBATCH --time=0-0:59:00
