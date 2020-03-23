@@ -50,16 +50,22 @@ process_section(const char* filename, long long start, long long end) {
 		// Open file for each thread
 		ifstream is(filename, std::ifstream::in);
 
-#ifdef DEBUG
 		int rank;
 		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+		if (is.fail()) {
+			std::cerr << "[!] MPI-" << rank << " Thread-"
+					  << omp_get_thread_num()
+					  << "failed to open file, error num:" << strerror(errno)
+					  << std::endl;
+		}
+
 		std::cout << "[*] MPI-" << rank << " Thread-" << omp_get_thread_num()
 				  << " is waitting for file stream ... " << std::endl;
 		while (!is.is_open()) {
 		}
 		std::cout << "[*] MPI-" << rank << " Thread-" << omp_get_thread_num()
 				  << " opened file " << std::endl;
-#endif
+
 #pragma omp for ordered
 		for (long long i = 0; i < n_chunks; i++) {
 			// Get chunk start/end
@@ -114,7 +120,7 @@ void process_section_thread(
 	char c;
 	string line;
 
-#ifdef TLOG
+#ifdef DEBUG
 	// Print start offset & end offset
 	int rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
