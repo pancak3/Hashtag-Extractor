@@ -1,5 +1,5 @@
 CC=mpiCC
-CFLAGS=-fopenmp -O3 -std=c++11 -DDEBUG -DTLOG
+CFLAGS=-fopenmp -O3 -std=c++11 -DDEBUG
 EXE=tp
 
 SRC=combine.cpp threading.cpp line.cpp
