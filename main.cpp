@@ -55,6 +55,8 @@ int main(int argc, char** argv) {
 
 	// Terminates MPI execution environment
 	MPI::Finalize();
+
+	// Time taken
 	if (!rank) {
 		std::chrono::duration<double> elapsed_seconds =
 			std::chrono::system_clock::now() - start_ts;
@@ -78,8 +80,8 @@ void perform_work(const char* filename, const long long file_length,
 	// Print file size
 	if (rank == 0) {
 		std::stringstream m;
-		m << "[*] File (in bytes): " << filename << " " << file_length
-		  << std::endl;
+		m << "[*] File " << filename << " (in bytes): "
+		  << " " << file_length << std::endl;
 		std::cerr << m.str();
 	}
 

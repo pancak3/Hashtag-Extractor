@@ -17,11 +17,9 @@ using std::unordered_map;
 
 void combine_maps(unordered_map<string, unsigned long>& freq_map, int rank,
 				  int size);
-
 void easy_print(unordered_map<string, unsigned long>& map,
 				std::function<string(string)> printer);
-
-string format_str(string key_str, unordered_map<string, string> country_codes);
+string format_country_code(unordered_map<string, string>, string);
 
 // Calls on functions to combines results from multiple nodes together
 // and print them
@@ -30,7 +28,6 @@ void combine_results(pair<unordered_map<string, unsigned long>,
 						 results,
 					 int rank, int size,
 					 unordered_map<string, string> country_codes) {
-
 	// Extract from pair
 	unordered_map<string, unsigned long> combined_lang_freq = results.first;
 	unordered_map<string, unsigned long> combined_hashtag_freq =
@@ -40,28 +37,31 @@ void combine_results(pair<unordered_map<string, unsigned long>,
 	combine_maps(combined_lang_freq, rank, size);
 	combine_maps(combined_hashtag_freq, rank, size);
 
-	std::function<string(string)> printer =
-		std::bind(format_str, std::placeholders::_1, country_codes);
+	std::function<string(string)> lang_printer =
+		std::bind(format_country_code, country_codes, std::placeholders::_1);
 	if (rank == 0) {
 		std::cout << std::endl << "[*] Language Freq Results" << std::endl;
-		easy_print(combined_lang_freq, printer);
+		easy_print(combined_lang_freq, lang_printer);
 		std::cout << std::endl << "[*] Hashtag Freq Results" << std::endl;
-		easy_print(combined_hashtag_freq, printer);
+		easy_print(combined_hashtag_freq, [](string key) { return key; });
 	}
 }
 
-string format_str(string key_str,
-				  unordered_map<string, string> country_codes) {
-	if (key_str[0] == '#') {
-		return key_str + ",";
-	} else if ('a' <= key_str[0] && key_str[0] <= 'z') {
-		return country_codes[key_str] + " (" + key_str + "),";
-	} else {
-		for (int i = key_str.length() - 3; i >= 1; i -= 3) {
-			key_str.insert(i, ",");
-		}
-		return key_str;
+// Formats a number according to specification
+string format_number(string number_str) {
+	for (int i = number_str.length() - 3; i >= 1; i -= 3) {
+		number_str.insert(i, ",");
 	}
+	return number_str;
+}
+
+// Formats a country code
+string format_country_code(unordered_map<string, string> country_codes,
+						   string key_str) {
+	if (country_codes[key_str].length() == 0) {
+		return "unknown (" + key_str + ")";
+	}
+	return country_codes[key_str] + " (" + key_str + ")";
 }
 
 // Prints top 10 of <string, unsigned long> maps
@@ -80,12 +80,13 @@ void easy_print(unordered_map<string, unsigned long>& map,
 		});
 
 	// Get frequency of 10th element
-	unsigned long freq = pairs[9].second;
+	unsigned long freq = pairs[std::min(9UL, pairs.size() - 1)].second;
 
 	// Print up to 10th element and any ties for 10th place
 	for (int i = 0; pairs[i].second >= freq; i++) {
-		std::cout << printer(pairs[i].first) << " "
-				  << printer(std::to_string(pairs[i].second)) << std::endl;
+		std::cout << printer(pairs[i].first) << ", "
+				  << format_number(std::to_string(pairs[i].second))
+				  << std::endl;
 	}
 }
 
