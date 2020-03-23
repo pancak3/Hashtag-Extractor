@@ -7,6 +7,8 @@
 
 #include <fstream>
 #include <iostream>
+#include <mpi.h>
+#include <omp.h>
 #include <sstream>
 #include <unordered_map>
 #include <utility>
@@ -102,10 +104,13 @@ void process_section_thread(
 	char c;
 	string line;
 
-#ifdef DEBUG
+#ifdef TLOG
 	// Print start offset & end offset
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	std::stringstream m;
-	m << "Thread started work on: " << start << " " << end << std::endl;
+	m << "[*] MPI-" << rank << " Thread-" << omp_get_thread_num()
+	  << " started work on: " << start << " " << end << std::endl;
 	std::cerr << m.str();
 #endif
 

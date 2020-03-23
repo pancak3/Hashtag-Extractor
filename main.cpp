@@ -9,6 +9,7 @@
 #include <ctime>
 #include <fstream>
 #include <mpi.h>
+#include <omp.h>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
@@ -97,8 +98,8 @@ void perform_work(const char* filename, const long long file_length,
 #ifdef DEBUG
 	// Print chunks allocated
 	std::stringstream m;
-	m << "Rank " << rank << " assigned: start: " << start << ", end: " << end
-	  << std::endl;
+	m << "Rank-" << rank << " (" << omp_get_max_threads() << " threads)"
+	  << " assigned:\r\n\t" << start << ", " << end << std::endl;
 	std::cerr << m.str();
 #endif
 
