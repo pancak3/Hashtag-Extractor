@@ -57,6 +57,7 @@ process_section(const char* filename, long long start, long long end) {
 					  << omp_get_thread_num()
 					  << "failed to open file, error num:" << strerror(errno)
 					  << std::endl;
+			std::exit(EXIT_FAILURE);
 		}
 
 		std::cout << "[*] MPI-" << rank << " Thread-" << omp_get_thread_num()
