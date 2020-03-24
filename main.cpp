@@ -23,7 +23,7 @@ using std::pair;
 using std::string;
 using std::unordered_map;
 
-// Prototypes
+// Function prototypes
 long long get_file_length(const char* filename);
 void perform_work(const char* filename, long long file_length,
 				  unordered_map<string, string>& country_codes);

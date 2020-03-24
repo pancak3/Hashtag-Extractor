@@ -15,36 +15,22 @@ using std::pair;
 using std::string;
 using std::unordered_map;
 
-/**
- * Combine maps from multiple nodes together
- */
+// Function prototypes
 void combine_maps(unordered_map<string, unsigned long>& freq_map, int rank,
 				  int size);
-
-/**
- * Prints top 10 of <string, unsigned long> maps
- */
 void easy_print(unordered_map<string, unsigned long>& map,
 				const std::function<string(string)>& printer);
-
-/**
- * Formats a number according to specification
- */
 string format_number(string number_str);
-
-/**
- * Formats a language from short name to real name
- */
 string format_lang(unordered_map<string, string> lang_map,
 				   const string& short_lang);
 
 /**
  * Calls on functions to combines results from multiple nodes together and
- * print them
+ * print them.
  * @param results pair of lang_freq_map and hashtag_freq_map (pair)
  * @param rank rank of the running process in the group of comm (integer)
  * @param size number of processes in the group of comm (integer)
- * @param lang_map language short name map e.g.: lang_map["en"] -> "English"
+ * @param lang_map language identifier map e.g.: lang_map["en"] -> "English"
  */
 void combine_results(const pair<unordered_map<string, unsigned long>,
 								unordered_map<string, unsigned long>>& results,
@@ -55,7 +41,7 @@ void combine_results(const pair<unordered_map<string, unsigned long>,
 	unordered_map<string, unsigned long> combined_hashtag_freq =
 		results.second;
 
-	// Combine
+	// Combine and print
 	combine_maps(combined_lang_freq, rank, size);
 	combine_maps(combined_hashtag_freq, rank, size);
 
@@ -70,11 +56,10 @@ void combine_results(const pair<unordered_map<string, unsigned long>,
 }
 
 /**
- * Formats a number according to specification
+ * Formats a number according to specification.
  * @param number_str string of a number (string), e.g.: "6743991"
  * @return formatted string of the input number (string), e.g.: "6,743,991"
  */
-
 string format_number(string number_str) {
 	for (int i = (int)number_str.length() - 3; i >= 1; i -= 3) {
 		number_str.insert(i, ",");
@@ -83,13 +68,12 @@ string format_number(string number_str) {
 }
 
 /**
- * Formats a language from short name to real name
+ * Formats a language from language identifier to real name.
  * @param lang_map map of <identifier, language> pairs (unordered_map) e.g.:
  * lang_map["en"] -> "English"
  * @param short_lang short name of the language (string) e.g.: "en"
  * @return real name of the short name of a language (string) e.g.: "English"
  */
-
 string format_lang(unordered_map<string, string> lang_map,
 				   const string& short_lang) {
 	if (lang_map[short_lang].length() == 0) {
@@ -99,9 +83,9 @@ string format_lang(unordered_map<string, string> lang_map,
 }
 
 /**
- * Prints top 10 of <string, unsigned long> maps
+ * Prints top 10 of <string, unsigned long> maps.
  * @param map combined map of languages or hashtags (unordered_map)
- * @param printer pointer of the function to print language (pointer)
+ * @param printer function pointer to format key (pointer)
  */
 void easy_print(unordered_map<string, unsigned long>& map,
 				const std::function<string(string)>& printer) {
@@ -128,7 +112,7 @@ void easy_print(unordered_map<string, unsigned long>& map,
 }
 
 /**
- * Combine maps from multiple nodes together
+ * Combine maps from multiple nodes together.
  * @param freq_map frequencies map of languages or hashtags (unordered_map)
  * @param rank rank of the running process in the group of comm (integer)
  * @param size number of processes in the group of comm (integer)

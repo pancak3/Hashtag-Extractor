@@ -4,7 +4,7 @@ using std::string;
 using std::unordered_map;
 
 /**
- * Retrieve hashtags from line, and calculate frequencies of them
+ * Extract language and hashtags from line, and calculate frequencies.
  */
 void process_line(const string& line,
 				  unordered_map<string, unsigned long>& lang_freq_map,

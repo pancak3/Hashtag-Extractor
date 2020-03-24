@@ -1,5 +1,5 @@
-// References:
-// https://stackoverflow.com/questions/17337602/how-to-get-error-message-when-ifstream-open-fails
+// Processes and extracts information from individual lines
+
 #include <iostream>
 #include <regex>
 #include <unordered_map>
@@ -8,17 +8,16 @@
 using namespace std;
 using namespace rapidjson;
 
-/**
- * Lower case a string
- */
+// Function prototype
 string to_lower(string in);
 
 // Pattern used to match hashtags
 string pattern = "#[\\d\\w]+";
+regex pattern_hashtag(pattern);
 
 /**
- * Retrieve hashtags from line, and calculate frequencies of them
- * @param line string of a line (string), e.g.: "This is a tweet!"
+ * Extract language and hashtags from line, and calculate frequencies.
+ * @param line line (string), e.g.: "This is a tweet!"
  * @param lang_freq_map frequency map of languages (unordered_map), e.g.:
  * lang_freq_map["en"] -> 42
  * @param hashtag_freq_map frequency map of hashtags (unordered_map), e.g.:
@@ -27,21 +26,19 @@ string pattern = "#[\\d\\w]+";
 void process_line(const string& line,
 				  unordered_map<string, unsigned long>& lang_freq_map,
 				  unordered_map<string, unsigned long>& hashtag_freq_map) {
-
 	try {
-		regex pattern_hashtag(pattern);
-		// parse into json
+		// Parse into json
 		Document d;
 		d.Parse(line.c_str());
 
-		// retrieve hash tags
+		// Extract hash tags
 		smatch matched_strings;
 		regex_search(line, matched_strings, pattern_hashtag);
 		for (auto matched : matched_strings) {
 			if (matched.length()) {
 				string matched_lower = to_lower(matched);
 
-				// whether contains key
+				// Whether contains key
 				if (hashtag_freq_map.end() !=
 					hashtag_freq_map.find(matched_lower)) {
 					hashtag_freq_map[matched_lower] += 1;
@@ -51,6 +48,7 @@ void process_line(const string& line,
 			}
 		}
 
+		// Extract language
 		string lang = d["doc"]["lang"].GetString();
 		if (lang_freq_map.find(lang) != lang_freq_map.end()) {
 			lang_freq_map[lang] += 1;
@@ -58,17 +56,17 @@ void process_line(const string& line,
 			lang_freq_map[lang] = 1;
 		}
 	} catch (const std::regex_error& e) {
-		std::cout << "regex_error caught: " << e.what() << '\n';
+		std::cout << "regex_error caught: " << e.what() << std::endl;
 		if (e.code() == std::regex_constants::error_brack) {
-			std::cout << "The code was error_brack\n";
+			std::cout << "The code was error_brack" << std::endl;
 		}
 	}
 };
 
 /**
- * Lower case a string
- * @param in an input string (string), e.g.: "#ANice_Day"
- * @return the lower case of input string (string), e.g.: "#anice_day"
+ * Transform string to lowercase.
+ * @param in input string (string), e.g.: "#ANice_Day"
+ * @return lower case equivalent of input string (string), e.g.: "#anice_day"
  */
 string to_lower(string in) {
 	for (char& i : in)
