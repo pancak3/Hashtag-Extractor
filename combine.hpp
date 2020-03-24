@@ -5,8 +5,11 @@ using std::pair;
 using std::string;
 using std::unordered_map;
 
-void combine_results(pair<unordered_map<string, unsigned long>,
-						  unordered_map<string, unsigned long>>
-						 results,
+/**
+ * Calls on functions to combines results from multiple nodes together and
+ * print them
+ */
+void combine_results(const pair<unordered_map<string, unsigned long>,
+								unordered_map<string, unsigned long>>& results,
 					 int rank, int size,
-					 unordered_map<string, string> country_codes);
+					 const unordered_map<string, string>& lang_map);

@@ -3,20 +3,30 @@
 #include <iostream>
 #include <regex>
 #include <unordered_map>
-
 #include "include/rapidjson/document.h"
 
 using namespace std;
 using namespace rapidjson;
 
-// prototype
+/**
+ * Lower case a string
+ */
 string to_lower(string in);
 
-// punctuations refer to
-// https://www.regular-expressions.info/posixbrackets.html
+/**
+ * Pattern used to match hashtags
+ */
 regex pattern_hashtag("#[\\d\\w]+");
 
-void process_line(string line,
+/**
+ * Retrieve hashtags from line, and calculate frequencies of them
+ * @param line string of a line (string), e.g.: "This is a tweet!"
+ * @param lang_freq_map frequency map of languages (unordered_map), e.g.:
+ * lang_freq_map["en"] -> 42
+ * @param hashtag_freq_map frequency map of hashtags (unordered_map), e.g.:
+ * hashtag_freq_map["#hashtag"] -> 43
+ */
+void process_line(const string& line,
 				  unordered_map<string, unsigned long>& lang_freq_map,
 				  unordered_map<string, unsigned long>& hashtag_freq_map) {
 	// parse into json
@@ -48,9 +58,14 @@ void process_line(string line,
 	}
 };
 
+/**
+ * Lower case a string
+ * @param in an input string (string), e.g.: "#ANice_Day"
+ * @return the lower case of input string (string), e.g.: "#anice_day"
+ */
 string to_lower(string in) {
-	for (int i = 0; i < in.length(); i++)
-		if ('A' <= in[i] && in[i] <= 'Z')
-			in[i] += 32;
+	for (char& i : in)
+		if ('A' <= i && i <= 'Z')
+			i += 32;
 	return in;
 }
