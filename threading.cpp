@@ -119,7 +119,7 @@ void process_section_thread(
 	int rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	std::stringstream m;
-	m << "[*] MPI-" << rank << " Thread-" << omp_get_thread_num()
+	m << "[*] MPI " << rank << " Thread " << omp_get_thread_num()
 	  << " started work on: " << start << " " << end << std::endl;
 	std::cerr << m.str();
 #endif
