@@ -7,6 +7,8 @@
 
 #include <fstream>
 #include <iostream>
+#include <mpi.h>
+#include <omp.h>
 #include <sstream>
 #include <unordered_map>
 #include <utility>
@@ -47,6 +49,16 @@ process_section(const char* filename, long long start, long long end) {
 			hashtag_freq_map({});
 		// Open file for each thread
 		ifstream is(filename, std::ifstream::in);
+
+		int rank;
+		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+		if (is.fail() || !is.is_open()) {
+			std::cerr << "[!] MPI " << rank << " Thread "
+					  << omp_get_thread_num()
+					  << " failed to open file, error num:" << strerror(errno)
+					  << std::endl;
+			std::exit(EXIT_FAILURE);
+		}
 
 #pragma omp for ordered
 		for (long long i = 0; i < n_chunks; i++) {
@@ -104,8 +116,11 @@ void process_section_thread(
 
 #ifdef DEBUG
 	// Print start offset & end offset
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	std::stringstream m;
-	m << "Thread started work on: " << start << " " << end << std::endl;
+	m << "[*] MPI " << rank << " Thread " << omp_get_thread_num()
+	  << " started work on: " << start << " " << end << std::endl;
 	std::cerr << m.str();
 #endif
 

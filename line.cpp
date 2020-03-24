@@ -1,3 +1,5 @@
+// References:
+// https://stackoverflow.com/questions/17337602/how-to-get-error-message-when-ifstream-open-fails
 #include <iostream>
 #include <regex>
 #include <unordered_map>
@@ -12,8 +14,8 @@ string to_lower(string in);
 
 // punctuations refer to
 // https://www.regular-expressions.info/posixbrackets.html
-regex pattern_hashtag("(?:\\s|^)#[A-Za-z0-9]+(?:\\s|$|[!\"\\#$%&'()*+,./"
-					  ":;<=>?@\\[\\\\\\]^_‘{|}~])");
+regex pattern_hashtag(
+	"#[A-Za-z0-9_]+(?:\\s|$|[!\"\\#$%&'()*+,./:;<-=>?@\\[\\\\\\]^‘{|}~])");
 
 void process_line(string line,
 				  unordered_map<string, unsigned long>& lang_freq_map,
@@ -52,6 +54,5 @@ string to_lower(string in) {
 		if ('A' <= in[i] && in[i] <= 'Z')
 			in[i] += 32;
 	in.pop_back();
-	in.erase(in.begin());
 	return in;
 }

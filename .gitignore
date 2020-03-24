@@ -3,7 +3,7 @@ tp
 .vscode/
 .idea
 *.o
-*.sh
 cmake-build-debug
 vgcore.*
+*.out
 

@@ -9,6 +9,7 @@
 #include <ctime>
 #include <fstream>
 #include <mpi.h>
+#include <omp.h>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
@@ -39,8 +40,9 @@ int main(int argc, char** argv) {
 
 	// Init executation environment
 	MPI::Init(argc, argv);
-	int rank;
+	int rank, size;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
 	// Get number of bytes in file
 	long long file_length = get_file_length(argv[1]);
@@ -57,11 +59,11 @@ int main(int argc, char** argv) {
 	MPI::Finalize();
 
 	// Time taken
-	if (!rank) {
+
+	if (rank == 0) {
 		std::chrono::duration<double> elapsed_seconds =
 			std::chrono::system_clock::now() - start_ts;
-		std::cout << std::endl
-				  << "[*] Time cost: " << elapsed_seconds.count() << " seconds"
+		std::cout << "[*] Time cost: " << elapsed_seconds.count() << " seconds"
 				  << std::endl;
 	}
 
@@ -97,8 +99,8 @@ void perform_work(const char* filename, const long long file_length,
 #ifdef DEBUG
 	// Print chunks allocated
 	std::stringstream m;
-	m << "Rank " << rank << " assigned: start: " << start << ", end: " << end
-	  << std::endl;
+	m << "Rank " << rank << " (" << omp_get_max_threads() << " threads)"
+	  << " assigned: " << start << ", " << end << std::endl;
 	std::cerr << m.str();
 #endif
 
