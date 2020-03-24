@@ -1,9 +1,11 @@
 // Entry point of program
-// MPI divides work here
+// Initial scan of input and MPI work division occurs here
 
 // References:
+// man pages for various library functions
+// Language codes taken from:
+// https://developer.twitter.com/en/docs/tweets/rules-and-filtering/overview/premium-operators
 // https://stackoverflow.com/questions/14718124
-// Note that comments/code may be adapted from man pages
 
 #include <chrono>
 #include <ctime>
@@ -23,22 +25,20 @@ using std::unordered_map;
 
 // Prototypes
 long long get_file_length(const char* filename);
-
 void perform_work(const char* filename, long long file_length,
 				  unordered_map<string, string>& country_codes);
-
-unordered_map<string, string> read_country_csv(const char* filename);
+unordered_map<string, string> read_lang_csv(const char* filename);
 
 int main(int argc, char** argv) {
 	if (argc < 3) {
 		std::cerr << "usage: " << argv[0] << " "
-				  << "input.json country_codes.csv" << std::endl;
+				  << "input.json lang_codes.csv" << std::endl;
 		std::exit(EXIT_FAILURE);
 	}
 
 	auto start_ts = std::chrono::system_clock::now();
 
-	// Init executation environment
+	// Init execution environment
 	MPI::Init(argc, argv);
 	int rank, size;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -49,17 +49,15 @@ int main(int argc, char** argv) {
 
 	// Read country code CSV
 	// Assuming that there's not much overhead in reading a small file...
-	std::unordered_map<string, string> country_codes =
-		read_country_csv(argv[2]);
+	std::unordered_map<string, string> lang_map = read_lang_csv(argv[2]);
 
-	// Split and perform work
-	perform_work(argv[1], file_length, country_codes);
+	// Split using MPI, perform work and print out results
+	perform_work(argv[1], file_length, lang_map);
 
-	// Terminates MPI execution environment
+	// Terminate MPI execution environment
 	MPI::Finalize();
 
 	// Time taken
-
 	if (rank == 0) {
 		std::chrono::duration<double> elapsed_seconds =
 			std::chrono::system_clock::now() - start_ts;
@@ -70,12 +68,16 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
-// Determine work done by each node and joins results
+/**
+ * Splits and assigns work to each MPI node, joins and prints results.
+ * @param filename path of twitter file
+ * @param file_length length of twitter file in bytes
+ * @param lang_map map of <identifier, language> pairs
+ */
 void perform_work(const char* filename, const long long file_length,
-				  unordered_map<string, string>& country_codes) {
+				  unordered_map<string, string>& lang_map) {
+	// Get rank and size of current communicator
 	int rank, size;
-
-	// Get rank of current communicator + size
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
@@ -97,7 +99,7 @@ void perform_work(const char* filename, const long long file_length,
 	}
 
 #ifdef DEBUG
-	// Print chunks allocated
+	// Print chunks allocated to node
 	std::stringstream m;
 	m << "Rank " << rank << " (" << omp_get_max_threads() << " threads)"
 	  << " assigned: " << start << ", " << end << std::endl;
@@ -105,17 +107,21 @@ void perform_work(const char* filename, const long long file_length,
 #endif
 
 	// For the current process, divide the work further (into threads)
-	// Purpose: though we can have 1 MPI process for each core, let's try to
-	// avoid network communication overheads
+	// Though it's possible to have 1 MPI process for each core, use threads
+	// instead to reduce network communication overheads
 	pair<unordered_map<string, unsigned long>,
 		 unordered_map<string, unsigned long>>
 		results = process_section(filename, start, end);
 
 	// Combine results from multiple nodes and print
-	combine_results(results, rank, size, country_codes);
+	combine_results(results, rank, size, lang_map);
 }
 
-// Gets length of file
+/**
+ * Returns length of indicated file.
+ * @param filename path to file
+ * @return length of file in bytes
+ */
 long long get_file_length(const char* filename) {
 	struct stat sb;
 	if (lstat(filename, &sb) == -1) {
@@ -125,12 +131,16 @@ long long get_file_length(const char* filename) {
 	return sb.st_size;
 }
 
-// Reads csv file of country codes into <code, country> pairs
-unordered_map<string, string> read_country_csv(const char* filename) {
-	unordered_map<string, string> country_codes;
+/**
+ * Reads csv file of language codes into <identifier, language> pairs.
+ * @param filename path of language file
+ * @return map of <identifier, language> pairs
+ */
+unordered_map<string, string> read_lang_csv(const char* filename) {
+	unordered_map<string, string> lang_map;
 	std::ifstream is(filename, std::ifstream::in);
 	if (is.fail()) {
-		std::cerr << "Cannot access country file" << std::endl;
+		std::cerr << "Cannot access language file" << std::endl;
 		std::exit(EXIT_FAILURE);
 	}
 
@@ -141,9 +151,8 @@ unordered_map<string, string> read_country_csv(const char* filename) {
 
 		// Split and insert
 		size_t pos = line.rfind(",");
-		country_codes[line.substr(pos + 1, line.length())] =
-			line.substr(0, pos);
+		lang_map[line.substr(pos + 1, line.length())] = line.substr(0, pos);
 	}
 	is.close();
-	return country_codes;
+	return lang_map;
 }

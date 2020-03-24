@@ -19,24 +19,30 @@ using std::pair;
 using std::string;
 using std::unordered_map;
 
-// Work size (maximum length of file processed by thread at one time)
-static const long long CHUNK_SIZE = 1000 * 1000 * 200;
-
+// Prototypes
 void process_section_thread(
 	ifstream& is, long long start, long long end,
 	unordered_map<string, unsigned long>& lang_freq_map,
 	unordered_map<string, unsigned long>& hashtag_freq_map);
 
-// Further subdivides the section [start, end] and assign them to threads
+// Work size (maximum length of file processed by thread at one time)
+static const long long CHUNK_SIZE = 1000 * 1000 * 200;
+
+/**
+ * Further subdivides the section [start, end], assigns them to threads and
+ * combines the results.
+ * @param filename path of twitter file
+ * @param start start byte
+ * @param end end byte
+ */
 pair<unordered_map<string, unsigned long>,
 	 unordered_map<string, unsigned long>>
 process_section(const char* filename, long long start, long long end) {
-	// Final combined results
+	// Final combined results for process
 	unordered_map<string, unsigned long> combined_lang_freq,
 		combined_hashtag_freq;
-	unordered_map<string, unsigned long>::iterator j;
 
-	// Again, split into chunks
+	// Further subdivide into chunks
 	// Note that CHUNK_SIZE cannot be less than length of shortest line
 	long long total = (end - start) + 1;
 	long long n_chunks =
@@ -44,15 +50,16 @@ process_section(const char* filename, long long start, long long end) {
 
 #pragma omp parallel
 	{
-		// Init maps for each thread
+		// Init maps (for each thread)
 		unordered_map<string, unsigned long> lang_freq_map({}),
 			hashtag_freq_map({});
-		// Open file for each thread
+		// Open file (for each thread)
 		ifstream is(filename, std::ifstream::in);
 
-		int rank;
-		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+		// File reading failure
 		if (is.fail() || !is.is_open()) {
+			int rank;
+			MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 			std::cerr << "[!] MPI " << rank << " Thread "
 					  << omp_get_thread_num()
 					  << " failed to open file, error num:" << strerror(errno)
@@ -60,24 +67,27 @@ process_section(const char* filename, long long start, long long end) {
 			std::exit(EXIT_FAILURE);
 		}
 
+		// Process chunks in parallel
 #pragma omp for ordered
 		for (long long i = 0; i < n_chunks; i++) {
-			// Get chunk start/end
+			// Determine chunk start/end from chunk index
 			long long inner_start = start + i * CHUNK_SIZE;
 			long long inner_end = start + (i + 1) * CHUNK_SIZE - 1;
 			if (inner_end > end) {
 				inner_end = end;
 			}
 
-			// Process
+			// Pass work to thread
 			process_section_thread(is, inner_start, inner_end, lang_freq_map,
 								   hashtag_freq_map);
 		}
 		is.close();
 
-		// Combine together thread by thread (not concurrently)
+		// Combine together thread by thread (i.e. not concurrently)
 #pragma omp critical
 		{
+			unordered_map<string, unsigned long>::iterator j;
+
 			// Hashtag
 			for (j = hashtag_freq_map.begin(); j != hashtag_freq_map.end();
 				 j++) {
@@ -106,7 +116,14 @@ process_section(const char* filename, long long start, long long end) {
 													  combined_hashtag_freq);
 }
 
-// Actually process the section [start, end]
+/**
+ * Within each thread, process the section [start, end] by reading line
+ * by line and passing each line to the process_line function.
+ * process_line then mutates the maps (passed by reference).
+ * @param is input stream
+ * @param lang_freq_map language frequency map
+ * @param hashtag_freq_map hashtag frequency map
+ */
 void process_section_thread(
 	std::ifstream& is, long long start, long long end,
 	unordered_map<string, unsigned long>& lang_freq_map,
@@ -146,6 +163,7 @@ void process_section_thread(
 	while (is.good() && current <= end) {
 		// Read line
 		getline(is, line);
+
 		if (line.length() == 0 && current == end) {
 			// At a \n|{"id boundary, need to read/process next line
 			// since the thread for next chunk will skip the first line
@@ -167,10 +185,10 @@ void process_section_thread(
 			break;
 		}
 
-		// Process the line into result
+		// Process the line
 		process_line(line, lang_freq_map, hashtag_freq_map);
 
-		// Increment current by line length and 1 for \n
+		// Increment current by line_length and 1 for '\n'
 		current += line_length + 1;
 	}
 }
