@@ -13,10 +13,8 @@ using namespace rapidjson;
  */
 string to_lower(string in);
 
-/**
- * Pattern used to match hashtags
- */
-regex pattern_hashtag("#[\\d\\w]+");
+// Pattern used to match hashtags
+string pattern = "#[\\d\\w]+";
 
 /**
  * Retrieve hashtags from line, and calculate frequencies of them
@@ -29,32 +27,41 @@ regex pattern_hashtag("#[\\d\\w]+");
 void process_line(const string& line,
 				  unordered_map<string, unsigned long>& lang_freq_map,
 				  unordered_map<string, unsigned long>& hashtag_freq_map) {
-	// parse into json
-	Document d;
-	d.Parse(line.c_str());
 
-	// retrieve hash tags
-	smatch matched_strings;
-	regex_search(line, matched_strings, pattern_hashtag);
-	for (auto matched : matched_strings) {
-		if (matched.length()) {
-			string matched_lower = to_lower(matched);
+	try {
+		regex pattern_hashtag(pattern);
+		// parse into json
+		Document d;
+		d.Parse(line.c_str());
 
-			// whether contains key
-			if (hashtag_freq_map.end() !=
-				hashtag_freq_map.find(matched_lower)) {
-				hashtag_freq_map[matched_lower] += 1;
-			} else {
-				hashtag_freq_map[matched_lower] = 1;
+		// retrieve hash tags
+		smatch matched_strings;
+		regex_search(line, matched_strings, pattern_hashtag);
+		for (auto matched : matched_strings) {
+			if (matched.length()) {
+				string matched_lower = to_lower(matched);
+
+				// whether contains key
+				if (hashtag_freq_map.end() !=
+					hashtag_freq_map.find(matched_lower)) {
+					hashtag_freq_map[matched_lower] += 1;
+				} else {
+					hashtag_freq_map[matched_lower] = 1;
+				}
 			}
 		}
-	}
 
-	string lang = d["doc"]["lang"].GetString();
-	if (lang_freq_map.find(lang) != lang_freq_map.end()) {
-		lang_freq_map[lang] += 1;
-	} else {
-		lang_freq_map[lang] = 1;
+		string lang = d["doc"]["lang"].GetString();
+		if (lang_freq_map.find(lang) != lang_freq_map.end()) {
+			lang_freq_map[lang] += 1;
+		} else {
+			lang_freq_map[lang] = 1;
+		}
+	} catch (const std::regex_error& e) {
+		std::cout << "regex_error caught: " << e.what() << '\n';
+		if (e.code() == std::regex_constants::error_brack) {
+			std::cout << "The code was error_brack\n";
+		}
 	}
 };
 
