@@ -14,8 +14,7 @@ string to_lower(string in);
 
 // punctuations refer to
 // https://www.regular-expressions.info/posixbrackets.html
-regex pattern_hashtag(
-	"#[A-Za-z0-9_]+(?:\\s|$|[!\"\\#$%&'()*+,./:;<-=>?@\\[\\\\\\]^‘{|}~])");
+regex pattern_hashtag("#[\\d\\w]+");
 
 void process_line(string line,
 				  unordered_map<string, unsigned long>& lang_freq_map,
@@ -53,6 +52,5 @@ string to_lower(string in) {
 	for (int i = 0; i < in.length(); i++)
 		if ('A' <= in[i] && in[i] <= 'Z')
 			in[i] += 32;
-	in.pop_back();
 	return in;
 }
