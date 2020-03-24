@@ -19,4 +19,4 @@ format:
 	@clang-format -style=file -i *.cpp *.hpp
 
 archive:
-	git archive master --format=tar | gzip -9 - > comp90024-a1.tar.gz
+	git archive master --format=zip -9 > Steven-Tang-832031.zip
