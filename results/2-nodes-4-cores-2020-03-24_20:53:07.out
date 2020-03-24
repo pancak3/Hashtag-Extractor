@@ -1,0 +1,30 @@
+mpiCC -fopenmp -O3 -std=c++11 -o tp combine.o threading.o line.o main.cpp
+[*] File /data/projects/COMP90024/bigTwitter.json (in bytes):  20761096558
+
+[*] Language Freq Results
+English (en), 3,107,116
+Unknown (und), 252,117
+Thai (th), 134,571
+Portuguese (pt), 125,858
+Spanish (es), 74,028
+Japanese (ja), 49,929
+Tagalog (tl), 44,560
+Indonesian (in), 42,296
+French (fr), 38,098
+Arabic (ar), 24,501
+
+[*] Hashtag Freq Results
+#auspol, 22,152
+#1, 11,314
+#coronavirus, 8,093
+#xiaozhan, 6,991
+#dmsguild, 6,943
+#oldme, 6,765
+#firefightaustralia, 6,732
+#popupdungeon, 5,860
+#scottyfrommarketing, 5,662
+#echobox, 5,540
+
+[*] Time cost: 39.0792 seconds
+149.84user 4.95system 0:39.54elapsed 391%CPU (0avgtext+0avgdata 110272maxresident)k
+0inputs+16outputs (0major+24666minor)pagefaults 0swaps
