@@ -25,8 +25,10 @@ using std::unordered_map;
 
 // Function prototypes
 long long get_file_length(const char* filename);
+
 void perform_work(const char* filename, long long file_length,
 				  unordered_map<string, string>& country_codes);
+
 unordered_map<string, string> read_lang_csv(const char* filename);
 
 int main(int argc, char** argv) {
@@ -61,7 +63,8 @@ int main(int argc, char** argv) {
 	if (rank == 0) {
 		std::chrono::duration<double> elapsed_seconds =
 			std::chrono::system_clock::now() - start_ts;
-		std::cout << "[*] Time cost: " << elapsed_seconds.count() << " seconds"
+		std::cout << std::endl
+				  << "[*] Time cost: " << elapsed_seconds.count() << " seconds"
 				  << std::endl;
 	}
 
