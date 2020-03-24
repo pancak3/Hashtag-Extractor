@@ -7,3 +7,6 @@ cmake-build-debug
 vgcore.*
 *.out
 Spartan
+*.tar
+*.gz
+*.zip
