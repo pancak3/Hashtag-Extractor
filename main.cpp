@@ -27,7 +27,7 @@ using std::unordered_map;
 long long get_file_length(const char* filename);
 
 void perform_work(const char* filename, long long file_length,
-				  unordered_map<string, string>& country_codes);
+				  unordered_map<string, string>& lang_map);
 
 unordered_map<string, string> read_lang_csv(const char* filename);
 
@@ -126,7 +126,7 @@ void perform_work(const char* filename, const long long file_length,
  * @return length of file in bytes
  */
 long long get_file_length(const char* filename) {
-	struct stat sb;
+	struct stat sb {};
 	if (lstat(filename, &sb) == -1) {
 		perror("lstat");
 		std::exit(EXIT_FAILURE);
@@ -153,7 +153,7 @@ unordered_map<string, string> read_lang_csv(const char* filename) {
 		getline(is, line);
 
 		// Split and insert
-		size_t pos = line.rfind(",");
+		size_t pos = line.rfind(',');
 		lang_map[line.substr(pos + 1, line.length())] = line.substr(0, pos);
 	}
 	is.close();
