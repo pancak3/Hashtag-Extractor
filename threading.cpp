@@ -48,7 +48,9 @@ process_section(const char* filename, long long start, long long end) {
 	long long n_chunks =
 		total / CHUNK_SIZE + (total % CHUNK_SIZE == 0 ? 0 : 1);
 
-#pragma omp parallel
+#pragma omp parallel default(none)                                            \
+	shared(filename, n_chunks, start, end, combined_lang_freq,                \
+		   combined_hashtag_freq, std::cerr, ompi_mpi_comm_world)
 	{
 		// Init maps (for each thread)
 		unordered_map<string, unsigned long> lang_freq_map({}),
