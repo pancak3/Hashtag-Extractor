@@ -92,8 +92,9 @@ void perform_work(const char* filename, const long long file_length,
 		std::cerr << m.str();
 	}
 
-	// Let's start off with even divisions and improve it if we have time
-	// Note: start and end are inclusive
+	// Divide file into chunks by bytes
+	// Each MPI process will be allocated with a chunk
+	// Start and end are inclusive
 	long long chunk = file_length / size + (file_length % size == 0 ? 0 : 1);
 	long long start = rank * chunk;
 	long long end = std::min(file_length, (rank + 1) * chunk - 1);
@@ -102,7 +103,7 @@ void perform_work(const char* filename, const long long file_length,
 	}
 
 #ifdef DEBUG
-	// Print chunks allocated to node
+	// Print chunks allocated to processes
 	std::stringstream m;
 	m << "Rank " << rank << " (" << omp_get_max_threads() << " threads)"
 	  << " assigned: " << start << ", " << end << std::endl;
