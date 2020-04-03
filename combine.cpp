@@ -25,7 +25,7 @@ string format_lang(unordered_map<string, string> lang_map,
 				   const string& short_lang);
 
 /**
- * Calls on functions to combines results from multiple nodes together and
+ * Calls on functions to combines results from multiple processes together and
  * print them.
  * @param results pair of lang_freq_map and hashtag_freq_map (pair)
  * @param rank rank of the running process in the group of comm (integer)
@@ -112,7 +112,7 @@ void easy_print(unordered_map<string, unsigned long>& map,
 }
 
 /**
- * Combine maps from multiple nodes together.
+ * Combine maps from multiple processes together.
  * @param freq_map frequencies map of languages or hashtags (unordered_map)
  * @param rank rank of the running process in the group of comm (integer)
  * @param size number of processes in the group of comm (integer)
@@ -142,7 +142,7 @@ void combine_maps(unordered_map<string, unsigned long>& freq_map, int rank,
 		// Length of key string
 		unsigned long length = combined.str().length();
 
-		// Send all to first node
+		// Send all to first process
 		MPI_Send(&count, 1, MPI::UNSIGNED_LONG, 0, 0, MPI_COMM_WORLD);
 		MPI_Send(&length, 1, MPI::UNSIGNED_LONG, 0, 1, MPI_COMM_WORLD);
 		MPI_Send(&frequencies[0], (int)count, MPI::UNSIGNED_LONG, 0, 2,
@@ -152,7 +152,7 @@ void combine_maps(unordered_map<string, unsigned long>& freq_map, int rank,
 		return;
 	}
 
-	// Rank 0/node 0
+	// Rank 0/process 0
 	for (int i = 1; i < size; i++) {
 		unsigned long count;
 		unsigned long length;
@@ -175,7 +175,7 @@ void combine_maps(unordered_map<string, unsigned long>& freq_map, int rank,
 		MPI_Recv(keys, (int)length, MPI_CHAR, i, 3, MPI_COMM_WORLD, nullptr);
 		keys[length] = '\0';
 
-		// Add frequencies of node to map
+		// Add frequencies of process to map
 		char* code = strtok(keys, ",");
 		for (unsigned long f = 0; f < count; f++) {
 			if (freq_map.end() != freq_map.find(code)) {

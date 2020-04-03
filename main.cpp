@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
 }
 
 /**
- * Splits and assigns work to each MPI node, joins and prints results.
+ * Splits and assigns work to each MPI process, joins and prints results.
  * @param filename path of twitter file
  * @param file_length length of twitter file in bytes
  * @param lang_map map of <identifier, language> pairs
@@ -117,7 +117,7 @@ void perform_work(const char* filename, const long long file_length,
 		 unordered_map<string, unsigned long>>
 		results = process_section(filename, start, end);
 
-	// Combine results from multiple nodes and print
+	// Combine results from multiple process and print
 	combine_results(results, rank, size, lang_map);
 }
 
