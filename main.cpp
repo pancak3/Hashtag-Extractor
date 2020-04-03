@@ -25,10 +25,8 @@ using std::unordered_map;
 
 // Function prototypes
 long long get_file_length(const char* filename);
-
 void perform_work(const char* filename, long long file_length,
 				  unordered_map<string, string>& lang_map);
-
 unordered_map<string, string> read_lang_csv(const char* filename);
 
 int main(int argc, char** argv) {
@@ -117,7 +115,7 @@ void perform_work(const char* filename, const long long file_length,
 		 unordered_map<string, unsigned long>>
 		results = process_section(filename, start, end);
 
-	// Combine results from multiple process and print
+	// Combine results from multiple processes and print
 	combine_results(results, rank, size, lang_map);
 }
 

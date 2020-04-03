@@ -6,7 +6,7 @@ using std::string;
 using std::unordered_map;
 
 /**
- * Calls on functions to combines results from multiple processes together and
+ * Calls on functions to combine results from multiple processes together and
  * print them.
  */
 void combine_results(const pair<unordered_map<string, unsigned long>,

@@ -1,6 +1,3 @@
-// References:
-// https://rekols.github.io/2018/04-23/cpp-thousands-separator/
-
 #include <algorithm>
 #include <cstdlib>
 #include <functional>
@@ -25,7 +22,7 @@ string format_lang(unordered_map<string, string> lang_map,
 				   const string& short_lang);
 
 /**
- * Calls on functions to combines results from multiple processes together and
+ * Calls on functions to combine results from multiple processes together and
  * print them.
  * @param results pair of lang_freq_map and hashtag_freq_map (pair)
  * @param rank rank of the running process in the group of comm (integer)
@@ -56,7 +53,8 @@ void combine_results(const pair<unordered_map<string, unsigned long>,
 }
 
 /**
- * Formats a number according to specification.
+ * Formats a number according to the specification.
+ * From: https://rekols.github.io/2018/04-23/cpp-thousands-separator/
  * @param number_str string of a number (string), e.g.: "6743991"
  * @return formatted string of the input number (string), e.g.: "6,743,991"
  */
@@ -68,7 +66,7 @@ string format_number(string number_str) {
 }
 
 /**
- * Formats a language from language identifier to real name.
+ * Maps a language from language identifier to real name.
  * @param lang_map map of <identifier, language> pairs (unordered_map) e.g.:
  * lang_map["en"] -> "English"
  * @param short_lang short name of the language (string) e.g.: "en"
@@ -103,7 +101,7 @@ void easy_print(unordered_map<string, unsigned long>& map,
 	// Get frequency of 10th element
 	unsigned long freq = pairs[std::min(9UL, pairs.size() - 1)].second;
 
-	// Print up to 10th element and any ties for 10th place
+	// Print up to 10th element (and any ties for 10th place)
 	for (int i = 0; pairs[i].second >= freq; i++) {
 		std::cout << printer(pairs[i].first) << ", "
 				  << format_number(std::to_string(pairs[i].second))
@@ -112,8 +110,8 @@ void easy_print(unordered_map<string, unsigned long>& map,
 }
 
 /**
- * Combine maps from multiple processes together.
- * @param freq_map frequencies map of languages or hashtags (unordered_map)
+ * Combine maps (results) from multiple MPI processes together.
+ * @param freq_map frequency map of languages or hashtags (unordered_map)
  * @param rank rank of the running process in the group of comm (integer)
  * @param size number of processes in the group of comm (integer)
  */
@@ -175,7 +173,7 @@ void combine_maps(unordered_map<string, unsigned long>& freq_map, int rank,
 		MPI_Recv(keys, (int)length, MPI_CHAR, i, 3, MPI_COMM_WORLD, nullptr);
 		keys[length] = '\0';
 
-		// Add frequencies of process to map
+		// Merge frequencies into rank 0's map
 		char* code = strtok(keys, ",");
 		for (unsigned long f = 0; f < count; f++) {
 			if (freq_map.end() != freq_map.find(code)) {

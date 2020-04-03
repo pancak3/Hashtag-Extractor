@@ -30,7 +30,7 @@ static const long long CHUNK_SIZE = 1000 * 1000 * 200;
 
 /**
  * Further subdivides the section [start, end], assigns them to threads and
- * combines the results.
+ * combines results.
  * @param filename path of twitter file
  * @param start start byte
  * @param end end byte
@@ -173,7 +173,7 @@ void process_section_thread(
 		}
 		size_t line_length = line.length();
 
-		// Remove last 2 characters, when applicable to trim to valid json
+		// When applicable, remove 2 characters to trim to valid json
 		// Assumption made that each line ends with r',?\r$'
 		if (line[line.length() - 1] == '\r') {
 			line.pop_back();

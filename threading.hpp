@@ -3,7 +3,7 @@
 
 /*
  * Further subdivides the section [start, end], assigns them to threads and
- * combines the results.
+ * combines results.
  */
 std::pair<std::unordered_map<std::string, unsigned long>,
 		  std::unordered_map<std::string, unsigned long>>
