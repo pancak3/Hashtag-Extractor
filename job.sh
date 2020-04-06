@@ -11,7 +11,7 @@ if [[ -z $1 || -z $2 ]]; then
 fi
 
 # submission time
-date_str=$(date '+%Y-%m-%d_%H:%M:%S')
+date_str=$(date '+%Y-%m-%d_%H:%M:%S.%6N')
 
 # run job and extract id
 job_id=$(sbatch --nodes="$n_nodes" --ntasks="$n_tasks" --cpus-per-task="$n_cpus" "$slurm_file" | awk '{print $4}')
