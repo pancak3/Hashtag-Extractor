@@ -62,8 +62,8 @@ int main(int argc, char** argv) {
 		std::chrono::duration<double> elapsed_seconds =
 			std::chrono::system_clock::now() - start_ts;
 		std::cout << std::endl
-				  << "[*] Time cost: " << elapsed_seconds.count() << " seconds"
-				  << std::endl;
+				  << "[*] Time cost (built-in)\n\t" << elapsed_seconds.count()
+				  << " seconds" << std::endl;
 	}
 
 	return 0;
