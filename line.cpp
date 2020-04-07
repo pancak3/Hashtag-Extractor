@@ -34,7 +34,6 @@ void process_line(const string& line,
 		// Avoid to extract usl params as hash tags
 		string content;
 		content = d["doc"]["text"].GetString();
-		content += d["doc"]["user"]["description"].GetString();
 
 		// Extract hash tags
 		smatch matched_strings;
