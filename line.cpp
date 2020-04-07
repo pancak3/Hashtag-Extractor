@@ -31,9 +31,14 @@ void process_line(const string& line,
 		Document d;
 		d.Parse(line.c_str());
 
+		// Avoid to extract usl params as hash tags
+		string content;
+		content = d["doc"]["text"].GetString();
+
 		// Extract hash tags
 		smatch matched_strings;
-		regex_search(line, matched_strings, pattern_hashtag);
+
+		regex_search(content, matched_strings, pattern_hashtag);
 		for (auto matched : matched_strings) {
 			if (matched.length()) {
 				string matched_lower = to_lower(matched);
