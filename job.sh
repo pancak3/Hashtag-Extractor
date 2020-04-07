@@ -1,8 +1,6 @@
 #!/bin/bash
 
 job() {
-  #!/bin/bash
-
   slurm_file="job.slurm"
   n_nodes=$1
   n_tasks=$1
@@ -28,8 +26,8 @@ job() {
   ln -s "$out" "$new_out"
 
   echo -e "Output of job $n_nodes nodes $n_cpus cores is at:\n\t$out -> $new_out"
-
 }
+
 # Launch jobs according to project specification
 # Run multiple times; 1 time by default
 if [[ -z $1 ]]; then

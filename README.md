@@ -1,53 +1,49 @@
-# HashtagExtractor
-
-An Open MPI & OpenMP implementation for extracting and ranking hashtags and languages from a big tweets file.
+# Hashtag Extractor
+An OpenMPI & OpenMP solution for extracting and ranking hashtags and languages from tweets.
 
 ## Dependency
 - mpiCC
 - make
 - OpenMP
 
-## Usage
+## Third Party Dependencies (included) 
+- [RapidJson](https://github.com/Tencent/rapidjson)
+    Used to parse a JSON string into a document (DOM).
 
+## Usage
 Compile and run,
 ```shell
-  make && mpirun -np 4 --bind-to none ./tp $YOUR_TWEETS_FILE_IN_JSON lang.csv
+  make && mpirun -np 4 --bind-to none ./tp <tweets.json> lang.csv
 ```
 
-_NOTE: In `$YOUR_TWEETS_FILE_IN_JSON` each line should be a tweet following [Twitter Docs](https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/intro-to-tweet-json). The first and last line should not be a tweet line._
+_NOTE: In `<tweets.sh>`, each line should be a tweet following the format specified in [Twitter Docs](https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/intro-to-tweet-json). The first and last lines should not be tweets._
 
 ## Files
 ```
 .
-├── CMakeLists.txt
-│       *Directives for cmake
 ├── combine.cpp
-│       *Combine results from multiple processes together
+│       * Combine results from multiple processes together
 ├── combine.hpp
 ├── include
 │   └── rapidjson
-│       ├── ... ...
 │       └── rapidjson files
 ├── job.sh
-│       *Invoke job.slurm to submmit multiple jobs
+│       * Invokes job.slurm to submit multiple jobs
 ├── job.slurm
-│       *Slurm script to submmit job to Spartan
+│       * Slurm script to submit job to Spartan HPC
 ├── lang.csv
-│       *Pairs of languages and their short name
+│       * Mappings between languages and language codes
 ├── line.cpp
-│       *Codes for extracting hashtags and languages from a file
+│       * Extracts hashtags and languages from tweets (in JSON form)
 ├── line.hpp
 ├── main.cpp
-│       *Main entry to divide a job into sections and assign them to Open MPI processes
+│       * Entrypoint of program, divides the input file into sections and assign them to MPI processes
 ├── Makefile
-│       *Directives for make
+│       * Directives for make
 ├── results
-│   ├── *output files
+│   ├── * Output files (results) from Spartan
 ├── threading.cpp
-│       *Codes for each process to divide their job into chunks and process them with OpenMP threads
+│       * Each process further subdivides their assigned sections into chunks and process them with OpenMP threads
 └── threading.hpp
 ```
-## Third Party Library
 
-- [RapidJson](https://github.com/Tencent/rapidjson)
-    Used to parse a JSON string into a document (DOM).
