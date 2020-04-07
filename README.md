@@ -14,7 +14,7 @@ Compile and run,
   make && mpirun -np 4 --bind-to none ./tp $YOUR_TWEETS_FILE_IN_JSON lang.csv
 ```
 
-_NOTE: In `$YOUR_TWEETS_FILE_IN_JSON` each line should be a tweet following [Twitter Docs](https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/intro-to-tweet-json). The first and the line should not be a tweet line._
+_NOTE: In `$YOUR_TWEETS_FILE_IN_JSON` each line should be a tweet following [Twitter Docs](https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/intro-to-tweet-json). The first and last line should not be a tweet line._
 
 ## Files
 ```
