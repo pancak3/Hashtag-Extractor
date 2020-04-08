@@ -1,0 +1,52 @@
+mpiCC -fopenmp -O3 -std=c++11 -o tp combine.o threading.o line.o main.cpp
+[*] File /data/projects/COMP90024/bigTwitter.json (in bytes):  20761096558
+
+[*] Language Freq Results
+English (en), 3,107,116
+undefined (und), 252,117
+Thai (th), 134,571
+Portuguese (pt), 125,858
+Spanish (es), 74,028
+Japanese (ja), 49,929
+Tagalog (tl), 44,560
+Indonesian (in), 42,296
+French (fr), 38,098
+Arabic (ar), 24,501
+
+[*] Hashtag Freq Results
+#auspol, 14,961
+#coronavirus, 6,804
+#firefightaustralia, 6,553
+#oldme, 6,385
+#grammys, 5,069
+#assange, 4,555
+#sydney, 3,645
+#scottyfrommarketing, 3,581
+#mafs, 3,370
+#breaking, 3,273
+
+[*] Time cost (built-in)
+	10.2272 seconds
+	Command being timed: "mpirun --bind-to none ./tp /data/projects/COMP90024/bigTwitter.json lang.csv"
+	User time (seconds): 34.53
+	System time (seconds): 4.12
+	Percent of CPU this job got: 353%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:10.93
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 98576
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 4
+	Minor (reclaiming a frame) page faults: 14320
+	Voluntary context switches: 867
+	Involuntary context switches: 235
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 16432
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
