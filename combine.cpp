@@ -15,9 +15,12 @@ using std::unordered_map;
 // Function prototypes
 void combine_maps(unordered_map<string, unsigned long>& freq_map, int rank,
 				  int size);
+
 void easy_print(unordered_map<string, unsigned long>& map,
 				const std::function<string(string)>& printer);
+
 string format_number(string number_str);
+
 string format_lang(unordered_map<string, string> lang_map,
 				   const string& short_lang);
 
@@ -103,7 +106,7 @@ void easy_print(unordered_map<string, unsigned long>& map,
 
 	// Print up to 10th element (and any ties for 10th place)
 	for (int i = 0; pairs[i].second >= freq; i++) {
-		std::cout << printer(pairs[i].first) << ", "
+		std::cout << i + 1 << ". " << printer(pairs[i].first) << ", "
 				  << format_number(std::to_string(pairs[i].second))
 				  << std::endl;
 	}
