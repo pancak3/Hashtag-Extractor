@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <regex>
+#include <set>
 #include <unordered_map>
 #include "include/rapidjson/document.h"
 
@@ -27,29 +28,48 @@ void process_line(const string& line,
 				  unordered_map<string, unsigned long>& lang_freq_map,
 				  unordered_map<string, unsigned long>& hashtag_freq_map) {
 	try {
-		// Parse into json
+		// Parse into JSON DOM
 		Document d;
 		d.Parse(line.c_str());
 
-		// Avoid to extract usl params as hash tags
-		string content;
-		content = d["doc"]["text"].GetString();
-
 		// Extract hash tags
+		set<string> unique_hashtags;
 		smatch matched_strings;
 
-		regex_search(content, matched_strings, pattern_hashtag);
+		// Extract hash tags from tweet text
+		string tweet_text;
+		tweet_text = d["doc"]["text"].GetString();
+		regex_search(tweet_text, matched_strings, pattern_hashtag);
 		for (auto matched : matched_strings) {
 			if (matched.length()) {
 				string matched_lower = to_lower(matched);
+				unique_hashtags.insert(matched_lower);
+			}
+		}
 
-				// Whether contains key
-				if (hashtag_freq_map.end() !=
-					hashtag_freq_map.find(matched_lower)) {
-					hashtag_freq_map[matched_lower] += 1;
-				} else {
-					hashtag_freq_map[matched_lower] = 1;
+		// Extract hash tags from doc->entities->hashtags
+		const Value& hashtags = d["doc"]["entities"]["hashtags"];
+		assert(hashtags.IsArray());
+		for (auto& v : hashtags.GetArray()) {
+			string hashtag = "#";
+			hashtag.append(v["text"].GetString());
+			regex_search(hashtag, matched_strings, pattern_hashtag);
+			for (auto filtered : matched_strings) {
+				if (filtered.length() == hashtag.length()) {
+					string filtered_lower = to_lower(filtered);
+					unique_hashtags.insert(filtered_lower);
 				}
+			}
+		}
+
+		// Count freq
+		for (const auto& unique_hashtag : unique_hashtags) {
+			// Whether contains key
+			if (hashtag_freq_map.end() !=
+				hashtag_freq_map.find(unique_hashtag)) {
+				hashtag_freq_map[unique_hashtag] += 1;
+			} else {
+				hashtag_freq_map[unique_hashtag] = 1;
 			}
 		}
 
