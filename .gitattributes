@@ -2,3 +2,4 @@
 .git*           export-ignore
 .clang-format   export-ignore
 CMakeLists.txt  export-ignore
+Dockerfile      export-ignore
