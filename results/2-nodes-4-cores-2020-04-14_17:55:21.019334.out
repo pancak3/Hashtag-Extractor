@@ -1,4 +1,4 @@
-mpiCC -fopenmp -O3 -std=c++11 -o tp combine.o threading.o line.o main.cpp
+make: `tp' is up to date.
 [*] File /data/projects/COMP90024/bigTwitter.json (in bytes):  20761096558
 
 [*] Language Freq Results
@@ -26,22 +26,22 @@ mpiCC -fopenmp -O3 -std=c++11 -o tp combine.o threading.o line.o main.cpp
 10. #iheartawards, 4,293
 
 [*] Time cost (built-in)
-	9.785 seconds
+	20.3801 seconds
 	Command being timed: "mpirun --bind-to none ./tp /data/projects/COMP90024/bigTwitter.json lang.csv"
-	User time (seconds): 33.89
-	System time (seconds): 3.74
-	Percent of CPU this job got: 358%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:10.49
+	User time (seconds): 41.16
+	System time (seconds): 4.44
+	Percent of CPU this job got: 209%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:21.74
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 104508
+	Maximum resident set size (kbytes): 105120
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 4
-	Minor (reclaiming a frame) page faults: 17054
-	Voluntary context switches: 870
-	Involuntary context switches: 249
+	Minor (reclaiming a frame) page faults: 21304
+	Voluntary context switches: 1233
+	Involuntary context switches: 855
 	Swaps: 0
 	File system inputs: 0
 	File system outputs: 16432
