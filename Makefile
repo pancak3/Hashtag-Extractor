@@ -6,7 +6,7 @@ SRC=combine.cpp threading.cpp line.cpp
 OBJ=$(SRC:.cpp=.o)
 
 # Main executable
-main: $(OBJ) main.cpp
+tp: $(OBJ) main.cpp
 	$(CC) $(CFLAGS) -o $(EXE) $(OBJ) main.cpp
 
 %.o: %.cpp
