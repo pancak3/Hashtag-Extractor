@@ -5,11 +5,13 @@
 // http://www.cplusplus.com/reference/fstream/ifstream/ifstream/
 // https://stackoverflow.com/questions/823479
 
+#define OMPI_SKIP_MPICXX
 #include <fstream>
 #include <iostream>
 #include <mpi.h>
 #include <omp.h>
 #include <sstream>
+#include <string.h>
 #include <unordered_map>
 #include <utility>
 #include "line.hpp"

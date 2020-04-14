@@ -7,9 +7,11 @@
 // https://developer.twitter.com/en/docs/tweets/rules-and-filtering/overview/premium-operators
 // https://stackoverflow.com/questions/14718124
 
+#define OMPI_SKIP_MPICXX
 #include <chrono>
 #include <ctime>
 #include <fstream>
+#include <iostream>
 #include <mpi.h>
 #include <omp.h>
 #include <sstream>
@@ -39,7 +41,7 @@ int main(int argc, char** argv) {
 	auto start_ts = std::chrono::system_clock::now();
 
 	// Init execution environment
-	MPI::Init(argc, argv);
+	MPI_Init(&argc, &argv);
 	int rank, size;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -55,7 +57,7 @@ int main(int argc, char** argv) {
 	perform_work(argv[1], file_length, lang_map);
 
 	// Terminate MPI execution environment
-	MPI::Finalize();
+	MPI_Finalize();
 
 	// Time taken
 	if (rank == 0) {

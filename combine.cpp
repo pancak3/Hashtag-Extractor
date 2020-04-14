@@ -1,13 +1,14 @@
+#define OMPI_SKIP_MPICXX
 #include <algorithm>
 #include <cstdlib>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <mpi.h>
 #include <sstream>
-#include <string>
+#include <string.h>
 #include <unordered_map>
 #include <vector>
-#include <iostream>
 
 using std::pair;
 using std::string;
@@ -145,9 +146,9 @@ void combine_maps(unordered_map<string, unsigned long>& freq_map, int rank,
 		unsigned long length = combined.str().length();
 
 		// Send all to first process
-		MPI_Send(&count, 1, MPI::UNSIGNED_LONG, 0, 0, MPI_COMM_WORLD);
-		MPI_Send(&length, 1, MPI::UNSIGNED_LONG, 0, 1, MPI_COMM_WORLD);
-		MPI_Send(&frequencies[0], (int)count, MPI::UNSIGNED_LONG, 0, 2,
+		MPI_Send(&count, 1, MPI_UNSIGNED_LONG, 0, 0, MPI_COMM_WORLD);
+		MPI_Send(&length, 1, MPI_UNSIGNED_LONG, 0, 1, MPI_COMM_WORLD);
+		MPI_Send(&frequencies[0], (int)count, MPI_UNSIGNED_LONG, 0, 2,
 				 MPI_COMM_WORLD);
 		MPI_Send(combined.str().c_str(), (int)length, MPI_CHAR, 0, 3,
 				 MPI_COMM_WORLD);
@@ -160,9 +161,8 @@ void combine_maps(unordered_map<string, unsigned long>& freq_map, int rank,
 		unsigned long length;
 
 		// Receive length and count
-		MPI_Recv(&count, 1, MPI::UNSIGNED_LONG, i, 0, MPI_COMM_WORLD, nullptr);
-		MPI_Recv(&length, 1, MPI::UNSIGNED_LONG, i, 1, MPI_COMM_WORLD,
-				 nullptr);
+		MPI_Recv(&count, 1, MPI_UNSIGNED_LONG, i, 0, MPI_COMM_WORLD, nullptr);
+		MPI_Recv(&length, 1, MPI_UNSIGNED_LONG, i, 1, MPI_COMM_WORLD, nullptr);
 
 		// Receive arrays
 		auto* frequencies =
@@ -172,7 +172,7 @@ void combine_maps(unordered_map<string, unsigned long>& freq_map, int rank,
 			std::cerr << "Malloc failure" << std::endl;
 			std::exit(1);
 		}
-		MPI_Recv(frequencies, (int)count, MPI::UNSIGNED_LONG, i, 2,
+		MPI_Recv(frequencies, (int)count, MPI_UNSIGNED_LONG, i, 2,
 				 MPI_COMM_WORLD, nullptr);
 		MPI_Recv(keys, (int)length, MPI_CHAR, i, 3, MPI_COMM_WORLD, nullptr);
 		keys[length] = '\0';
