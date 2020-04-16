@@ -1,4 +1,5 @@
 #define OMPI_SKIP_MPICXX
+
 #include <algorithm>
 #include <cstdlib>
 #include <functional>
@@ -113,6 +114,81 @@ void easy_print(unordered_map<string, unsigned long>& map,
 				  << std::endl;
 	}
 }
+/**
+ * Send maps (results) to the destination MPI process.
+ * @param dest the rank of the destination process
+ * @param freq_map frequency map of languages or hashtags (unordered_map)
+ */
+void send_results(int dest, unordered_map<string, unsigned long>& freq_map) {
+	std::vector<string> keys;
+	std::vector<unsigned long> frequencies;
+
+	// Elements in map to 2 vectors
+	unordered_map<string, unsigned long>::iterator it;
+	for (it = freq_map.begin(); it != freq_map.end(); it++) {
+		keys.push_back(it->first);
+		frequencies.push_back(it->second);
+	}
+
+	// Combine keys to comma separated string
+	// Adapted from stackoverflow 5689003
+	std::stringstream combined;
+	std::copy(keys.begin(), keys.end(),
+			  std::ostream_iterator<string>(combined, ","));
+
+	// Number of key/value pairs
+	unsigned long count = frequencies.size();
+	// Length of key string
+	unsigned long length = combined.str().length();
+
+	// Send all to first process
+	MPI_Send(&count, 1, MPI_UNSIGNED_LONG, dest, 0, MPI_COMM_WORLD);
+	MPI_Send(&length, 1, MPI_UNSIGNED_LONG, dest, 1, MPI_COMM_WORLD);
+	MPI_Send(&frequencies[0], (int)count, MPI_UNSIGNED_LONG, dest, 2,
+			 MPI_COMM_WORLD);
+	MPI_Send(combined.str().c_str(), (int)length, MPI_CHAR, dest, 3,
+			 MPI_COMM_WORLD);
+}
+
+/**
+ * Receive maps (results) from the source MPI process.
+ * @param source the rank of the source process
+ * @param freq_map frequency map of languages or hashtags (unordered_map)
+ */
+void recv_results(int source, unordered_map<string, unsigned long>& freq_map) {
+	unsigned long count;
+	unsigned long length;
+
+	// Receive length and count
+	MPI_Recv(&count, 1, MPI_UNSIGNED_LONG, source, 0, MPI_COMM_WORLD, nullptr);
+	MPI_Recv(&length, 1, MPI_UNSIGNED_LONG, source, 1, MPI_COMM_WORLD,
+			 nullptr);
+
+	// Receive arrays
+	auto* frequencies = (unsigned long*)malloc(sizeof(unsigned long) * count);
+	char* keys = (char*)malloc(sizeof(char) * (length + 1));
+	if (keys == nullptr || frequencies == nullptr) {
+		std::cerr << "Malloc failure" << std::endl;
+		std::exit(1);
+	}
+	MPI_Recv(frequencies, (int)count, MPI_UNSIGNED_LONG, source, 2,
+			 MPI_COMM_WORLD, nullptr);
+	MPI_Recv(keys, (int)length, MPI_CHAR, source, 3, MPI_COMM_WORLD, nullptr);
+	keys[length] = '\0';
+
+	// Merge frequencies into rank 0's map
+	char* code = strtok(keys, ",");
+	for (unsigned long f = 0; f < count; f++) {
+		if (freq_map.end() != freq_map.find(code)) {
+			freq_map[code] += frequencies[f];
+		} else {
+			freq_map[code] = frequencies[f];
+		}
+		code = strtok(nullptr, ",");
+	}
+	free(frequencies);
+	free(keys);
+}
 
 /**
  * Combine maps (results) from multiple MPI processes together.
@@ -122,73 +198,12 @@ void easy_print(unordered_map<string, unsigned long>& map,
  */
 void combine_maps(unordered_map<string, unsigned long>& freq_map, int rank,
 				  int size) {
-	// Rank not 0, send results to rank 0
-	if (rank != 0) {
-		std::vector<string> keys;
-		std::vector<unsigned long> frequencies;
-
-		// Elements in map to 2 vectors
-		unordered_map<string, unsigned long>::iterator it;
-		for (it = freq_map.begin(); it != freq_map.end(); it++) {
-			keys.push_back(it->first);
-			frequencies.push_back(it->second);
+	for (int s = size / 2; s > 0; s >>= 1) {
+		if (rank < s) {
+			recv_results(s + rank, freq_map);
+		} else if (rank < 2 * s) {
+			send_results(rank - s, freq_map);
 		}
-
-		// Combine keys to comma separated string
-		// Adapted from stackoverflow 5689003
-		std::stringstream combined;
-		std::copy(keys.begin(), keys.end(),
-				  std::ostream_iterator<string>(combined, ","));
-
-		// Number of key/value pairs
-		unsigned long count = frequencies.size();
-		// Length of key string
-		unsigned long length = combined.str().length();
-
-		// Send all to first process
-		MPI_Send(&count, 1, MPI_UNSIGNED_LONG, 0, 0, MPI_COMM_WORLD);
-		MPI_Send(&length, 1, MPI_UNSIGNED_LONG, 0, 1, MPI_COMM_WORLD);
-		MPI_Send(&frequencies[0], (int)count, MPI_UNSIGNED_LONG, 0, 2,
-				 MPI_COMM_WORLD);
-		MPI_Send(combined.str().c_str(), (int)length, MPI_CHAR, 0, 3,
-				 MPI_COMM_WORLD);
-		return;
-	}
-
-	// Rank 0/process 0
-	for (int i = 1; i < size; i++) {
-		unsigned long count;
-		unsigned long length;
-
-		// Receive length and count
-		MPI_Recv(&count, 1, MPI_UNSIGNED_LONG, i, 0, MPI_COMM_WORLD, nullptr);
-		MPI_Recv(&length, 1, MPI_UNSIGNED_LONG, i, 1, MPI_COMM_WORLD, nullptr);
-
-		// Receive arrays
-		auto* frequencies =
-			(unsigned long*)malloc(sizeof(unsigned long) * count);
-		char* keys = (char*)malloc(sizeof(char) * (length + 1));
-		if (keys == nullptr || frequencies == nullptr) {
-			std::cerr << "Malloc failure" << std::endl;
-			std::exit(1);
-		}
-		MPI_Recv(frequencies, (int)count, MPI_UNSIGNED_LONG, i, 2,
-				 MPI_COMM_WORLD, nullptr);
-		MPI_Recv(keys, (int)length, MPI_CHAR, i, 3, MPI_COMM_WORLD, nullptr);
-		keys[length] = '\0';
-
-		// Merge frequencies into rank 0's map
-		char* code = strtok(keys, ",");
-		for (unsigned long f = 0; f < count; f++) {
-			if (freq_map.end() != freq_map.find(code)) {
-				freq_map[code] += frequencies[f];
-			} else {
-				freq_map[code] = frequencies[f];
-			}
-			code = strtok(nullptr, ",");
-		}
-
-		free(frequencies);
-		free(keys);
+		MPI_Barrier(MPI_COMM_WORLD);
 	}
 }
