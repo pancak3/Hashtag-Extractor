@@ -13,3 +13,6 @@ void combine_results(const pair<unordered_map<string, unsigned long>,
 								unordered_map<string, unsigned long>>& results,
 					 int rank, int size,
 					 const unordered_map<string, string>& lang_map);
+
+void send_results(int dest, unordered_map<string, unsigned long>& freq_map);
+void recv_results(int source, unordered_map<string, unsigned long>& freq_map);
