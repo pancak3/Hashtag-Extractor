@@ -14,5 +14,12 @@ void combine_results(const pair<unordered_map<string, unsigned long>,
 					 int rank, int size,
 					 const unordered_map<string, string>& lang_map);
 
+/**
+ * Send maps (results) to the destination MPI process.
+ */
 void send_results(int dest, unordered_map<string, unsigned long>& freq_map);
+
+/**
+ * Receive maps (results) from the source MPI process.
+ */
 void recv_results(int source, unordered_map<string, unsigned long>& freq_map);
