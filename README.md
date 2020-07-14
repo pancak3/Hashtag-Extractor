@@ -16,7 +16,7 @@ Compile and run,
   make && mpirun -np 4 --bind-to none ./tp <tweets.json> lang.csv
 ```
 
-_NOTE: In `<tweets.json>`, each line should be a tweet following the format specified in [Twitter Docs](https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/intro-to-tweet-json). The first and last lines should not be tweets._
+_NOTE: In `<tweets.json>`, each line should be a tweet following the format specified in [Twitter Docs](https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/intro-to-tweet-json). The first and last lines should not be tweets. (The file comes from CouchDB using CURL command)_
 
 ## Files
 ```
